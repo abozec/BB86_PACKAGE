@@ -32,7 +32,9 @@ function write_relax_hycom(im, jm, km, io, file, field, d, res)
 
    %% NPAD size
    npad=4096-mod(ijdm,4096);
-   toto=zeros(npad,1);
+   if (npad ~= 4096) 
+     toto=zeros(npad,1);
+   end
 
    %% Grid Directory and file 
    file1 = [io,file];
@@ -48,7 +50,9 @@ function write_relax_hycom(im, jm, km, io, file, field, d, res)
        %% Writing the field
        fwrite(relax_fid,A,'float32','ieee-be');
        %% Writing the padding at the end of the record:
-       fwrite(relax_fid,toto,'float32','ieee-be');
+       if (npad ~= 4096) 
+	 fwrite(relax_fid,toto,'float32','ieee-be');
+       end
      end 
    end
    fclose(relax_fid);

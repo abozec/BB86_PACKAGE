@@ -12,7 +12,9 @@ function write_grid_hycom(im, jm,  io, file,plon, plat, ulon,  ulat,  vlon, vlat
   JDM=jm;
   IJDM=IDM*JDM;
   npad=4096-mod(IJDM,4096);
-  toto=zeros(npad,1);
+  if (npad ~= 4096) 
+    toto=zeros(npad,1);
+  end
   
   %% Writing .a file:
   A=plon';
@@ -20,102 +22,140 @@ function write_grid_hycom(im, jm,  io, file,plon, plat, ulon,  ulat,  vlon, vlat
 % Writing the field
   fwrite(grid_fid,A,'float32','ieee-be');
 % Writing the padding at the end of the record:
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=plat';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=qlon';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=qlat';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=ulon';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=ulat';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=vlon';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=vlat';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   
   A=pang';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   
   A=pscx';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=pscy';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=qscx';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=qscy';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   
   A=uscx';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=uscy';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=vscx';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   A=vscy';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   
   A=cori';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
   
   A=pasp';
   A=reshape(A,IJDM,1);
   fwrite(grid_fid,A,'float32','ieee-be');
-  fwrite(grid_fid,toto,'float32','ieee-be');
+  if (npad ~= 4096) 
+    fwrite(grid_fid,toto,'float32','ieee-be');
+  end
 
     
   fclose(grid_fid);
