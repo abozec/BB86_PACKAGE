@@ -1,0 +1,13 @@
+Starting with 2.2, the HYCOM archive files no longer include density.  This 
+is because T&S define density via the equation of state.  However, this means
+that the archive file must include information about the actual equation of
+state.  So "k  dens" for montg1 (the first record in the archive file) are
+actually sigver and thbase, where sigver is a small integer identifying the
+equation of state (taken from a parameter defined in stmt_fns.h).
+
+So far we have (odd for sigma-0, even for sigma-2):
+
+sigver =  1  ---  7-term sigma-0
+sigver =  2  ---  7-term sigma-2
+sigver =  3  ---  9-term sigma-0
+sigver =  4  ---  9-term sigma-2

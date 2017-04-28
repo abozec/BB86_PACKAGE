@@ -1,0 +1,5266 @@
+%!PS-Adobe-3.0
+%%Title: hybgen.f
+%%For: Alan Wallcraft
+%%Creator: a2ps version 4.13
+%%CreationDate: Thu Jun 12 16:23:51 2008
+%%BoundingBox: 24 24 588 768
+%%DocumentData: Clean7Bit
+%%Orientation: Portrait
+%%Pages: 27
+%%PageOrder: Ascend
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Define these in case they're not in the FontInfo (also, here
+    % they're easier to get to.
+    /UnderlinePosition 1 def
+    /UnderlineThickness 1 def
+    
+    % Get the underline position and thickness if they're defined.
+    currentdict /FontInfo known {
+      FontInfo
+      
+      dup /UnderlinePosition known {
+	dup /UnderlinePosition get
+	0 exch FontMatrix transform exch pop
+	/UnderlinePosition exch def
+      } if
+      
+      dup /UnderlineThickness known {
+	/UnderlineThickness get
+	0 exch FontMatrix transform exch pop
+	/UnderlineThickness exch def
+      } if
+      
+    } if
+    currentdict 
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed string
+% Version 1.2 1/31/1990
+% Orignal Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 792 def
+/sw 612 def
+/llx 24 def
+/urx 588 def
+/ury 768 def
+/lly 24 def
+/#copies 1 def
+/th 20.000000 def
+/fnfs 15 def
+/bfs 11.547912 def
+/cw 6.928747 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   689.410325 th add
+def
+/pmw 0 def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+] def
+/y [
+  pmh ph add 0 mul ph add
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1) 1
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(      ) p
+(subroutine) K
+( ) p
+(hybgen) L
+(\(m,n\)) p n
+(      ) S
+(use) K
+( ) p
+(mod_xc) l
+(    ) p
+(! HYCOM communication interface) c n
+(      ) p
+(use) K
+( ) p
+(mod_pipe) l
+(  ) p
+(! HYCOM debugging interface) c n
+(c) N
+(c --- hycom version 1.0) N
+(      ) p
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(include) K
+( ') p
+(common_blocks.h) str
+(') p n
+(c) c n
+(      ) p
+(integer) K
+( m,n) p n
+(c) c n
+(c --- ---------------------) N
+(c --- hybrid grid generator) N
+(c --- ---------------------) N
+(c) N
+(      ) p
+(logical) K
+(, ) p
+(parameter) K
+( :: lpipe_hybgen=.false.  ) p
+(!for debugging) c n
+(c) N
+(      ) p
+(integer) K
+(   i,j,k,l) p n
+(      ) S
+(character) K
+( text*12) p n
+(c) c n
+( 103  ) p
+(format) K
+( \(i9,2i5,a/\(33x,i3,2f8.3,f8.3,f9.3,f9.2\)\)) p n
+(cdiag ) S
+(if) K
+( \(itest) p
+(.gt.) K
+(0 ) p
+(.and.) K
+( jtest) p
+(.gt.) K
+(0\) ) p
+(then) K n
+(cdiag   ) p
+(write) K
+( \(lp,103\) nstep,itest+i0,jtest+j0,) p n
+(cdiag.  ') S
+(  entering hybgen:  temp    saln    dens     thkns     dpth) str
+(',) p n
+(cdiag.  \(k,temp\(itest,jtest,k,n\),saln\(itest,jtest,k,n\),) N
+(cdiag.  th3d\(itest,jtest,k,n\)+thbase,dp\(itest,jtest,k,n\)*qonem,) N
+(cdiag.  p\(itest,jtest,k+1\)*qonem,k=1,kk\)) N
+(cdiag ) S
+(endif) K n
+(c) c n
+(      ) p
+(call) K
+( ) p
+(xctilr) l
+(\(dpmixl\( 1-nbdy,1-nbdy,  n\),1, 1, 1,1, halo_ps\)) p n
+(c) c n
+(      margin = 0  ) p
+(! no horizontal derivatives) c n
+(c) N
+(!$OMP PARALLEL DO PRIVATE\(j\)) N
+(!$OMP&             SHARED\(m,n\)) N
+(!$OMP&         SCHEDULE\(STATIC,jblk\)) N
+(      ) p
+(do) K
+( j=1-margin,jj+margin) p n
+(        ) S
+(call) K
+( ) p
+(hybgenaj) l
+(\(m,n, j\)) p n
+(      ) S
+(enddo) K n
+(!$OMP END PARALLEL DO) c n
+(c) N
+(c --- vertical momentum flux across moving interfaces \(the s-dot term in the) N
+(c --- momentum equation\) - required to locally conserve momentum when hybgen) N
+(c --- moves vertical coordinates first, store old interface pressures in) N
+(c --- -pu-, -pv-) N
+(c) N
+(!$OMP PARALLEL DO PRIVATE\(j,l,i,k\)) N
+(!$OMP&         SCHEDULE\(STATIC,jblk\)) N
+(      ) p
+(do) K
+( j=1-margin,jj+margin) p n
+(        ) S
+(do) K
+( l=1,isu\(j\)) p n
+(          ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifu\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilu\(j,l\)\)) p n
+(            pu\(i,j,1\)=0.0) N
+(            pu\(i,j,2\)=dpu\(i,j,1,n\)) N
+(          ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(do) K
+( k=2,kk) p n
+(            ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifu\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilu\(j,l\)\)) p n
+(              pu\(i,j,k+1\)=pu\(i,j,k\)+dpu\(i,j,k,n\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(enddo) K
+( ) p
+(!k) c n
+(hybgen.f) (Page 1/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (1/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 2
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        ) p
+(enddo) K
+( ) p
+(!l) c n
+(        ) p
+(do) K
+( l=1,isv\(j\)) p n
+(          ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifv\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilv\(j,l\)\)) p n
+(            pv\(i,j,1\)=0.0) N
+(            pv\(i,j,2\)=dpv\(i,j,1,n\)) N
+(          ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(do) K
+( k=2,kk) p n
+(            ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifv\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilv\(j,l\)\)) p n
+(              pv\(i,j,k+1\)=pv\(i,j,k\)+dpv\(i,j,k,n\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(enddo) K
+( ) p
+(!k) c n
+(        ) p
+(enddo) K
+( ) p
+(!l) c n
+(      ) p
+(enddo) K
+( ) p
+(!j) c n
+(!$OMP END PARALLEL DO) N
+(c) N
+(c --- update layer thickness at -u,v- points.) N
+(      ) p
+(call) K
+( ) p
+(dpudpv) l
+(\(dpu\(1-nbdy,1-nbdy,1,n\),) p n
+(     &            dpv\(1-nbdy,1-nbdy,1,n\),) N
+(     &            p,depthu,depthv, margin\)  ) S
+(! p's halo extended by dpudpv) c n
+(c) N
+(      ) p
+(if) K
+(     \(lpipe ) p
+(.and.) K
+( lpipe_hybgen\) ) p
+(then) K n
+(c ---   compare two model runs.) c n
+(        ) p
+(do) K
+( k= 1,kk+1) p n
+(          ) S
+(write) K
+( \(text,') p
+(\(a9,i3\)) str
+('\) ') p
+(p      k=) str
+(',k) p n
+(          ) S
+(call) K
+( ) p
+(pipe_compare) l
+(\(p\( 1-nbdy,1-nbdy,k\),ip,text\)) p n
+(          ) S
+(write) K
+( \(text,') p
+(\(a9,i3\)) str
+('\) ') p
+(pu     k=) str
+(',k) p n
+(          ) S
+(call) K
+( ) p
+(pipe_compare) l
+(\(pu\(1-nbdy,1-nbdy,k\),iu,text\)) p n
+(          ) S
+(write) K
+( \(text,') p
+(\(a9,i3\)) str
+('\) ') p
+(pv     k=) str
+(',k) p n
+(          ) S
+(call) K
+( ) p
+(pipe_compare) l
+(\(pv\(1-nbdy,1-nbdy,k\),iv,text\)) p n
+(        ) S
+(enddo) K n
+(        ) p
+(do) K
+( k= 1,kk) p n
+(          ) S
+(write) K
+( \(text,') p
+(\(a9,i3\)) str
+('\) ') p
+(dp     k=) str
+(',k) p n
+(          ) S
+(call) K
+( ) p
+(pipe_compare) l
+(\(dp\( 1-nbdy,1-nbdy,k,n\),ip,text\)) p n
+(          ) S
+(write) K
+( \(text,') p
+(\(a9,i3\)) str
+('\) ') p
+(dpu    k=) str
+(',k) p n
+(          ) S
+(call) K
+( ) p
+(pipe_compare) l
+(\(dpu\(1-nbdy,1-nbdy,k,n\),iu,text\)) p n
+(          ) S
+(write) K
+( \(text,') p
+(\(a9,i3\)) str
+('\) ') p
+(dpv    k=) str
+(',k) p n
+(          ) S
+(call) K
+( ) p
+(pipe_compare) l
+(\(dpv\(1-nbdy,1-nbdy,k,n\),iv,text\)) p n
+(        ) S
+(enddo) K n
+(      ) p
+(endif) K n
+(c) c n
+(!$OMP PARALLEL DO PRIVATE\(j\)) N
+(!$OMP&             SHARED\(m,n\)) N
+(!$OMP&         SCHEDULE\(STATIC,jblk\)) N
+(      ) p
+(do) K
+( j=1-margin,jj+margin) p n
+(        ) S
+(call) K
+( ) p
+(hybgenbj) l
+(\(m,n, j\)) p n
+(      ) S
+(enddo) K n
+(!$OMP END PARALLEL DO) c n
+(c) N
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgen) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgenaj) L
+(\(m,n,j \)) p n
+(      ) S
+(use) K
+( ) p
+(mod_xc) l
+(  ) p
+(! HYCOM communication interface) c n
+(      ) p
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(include) K
+( ') p
+(common_blocks.h) str
+(') p n
+(c) c n
+(      ) p
+(integer) K
+( m,n, j) p n
+(c) c n
+(hybgen.f) (Page 2/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (2/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 3
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c --- --------------------------------------------) c n
+(c --- hybrid grid generator, single j-row \(part A\).) N
+(c --- --------------------------------------------) N
+(c) N
+(      ) p
+(logical) K
+(, ) p
+(parameter) K
+( :: lunmix=.true.     ) p
+(!unmix a too light deepest layer) c n
+(      ) p
+(logical) K
+(, ) p
+(parameter) K
+( :: lconserve=.false. ) p
+(!explicitly conserve each column) c n
+(c) N
+(      ) p
+(double precision) K
+( asum\(  mxtrcr+4,3\)) p n
+(      ) S
+(real) K
+(             offset\(mxtrcr+4\)) p n
+(c) c n
+(      ) p
+(logical) K
+( lcm\(kdm\)             ) p
+(!use PCM for some layers?) c n
+(      ) p
+(real) K
+(    s1d\(kdm,mxtrcr+4\),   ) p
+(!original scalar fields) c n
+(     &        f1d\(kdm,mxtrcr+4\),   ) p
+(!final    scalar fields) c n
+(     &        c1d\(kdm,mxtrcr+4,3\), ) p
+(!interpolation coefficients) c n
+(     &        dpi\( kdm\),           ) p
+(!original layer thicknesses, >= dpthin) c n
+(     &        dprs\(kdm\),           ) p
+(!original layer thicknesses) c n
+(     &        pres\(kdm+1\),         ) p
+(!original layer interfaces) c n
+(     &        prsf\(kdm+1\),         ) p
+(!final    layer interfaces) c n
+(     &        qhrlx\( kdm+1\),       ) p
+(!relaxation coefficient, from qhybrlx) c n
+(     &        dp0ij\( kdm\),         ) p
+(!minimum layer thickness) c n
+(     &        dp0cum\(kdm+1\)        ) p
+(!minimum interface depth) c n
+(      ) p
+(real) K
+(    p_hat,p_hat0,p_hat2,p_hat3,hybrlx,) p n
+(     &        delt,deltm,dels,delsm,q,qtr,qts,thkbop,) N
+(     &        zthk,dpthin) N
+(      ) S
+(integer) K
+( i,k,ka,kp,ktr,l,fixlay,nums1d) p n
+(      ) S
+(character) K
+(*12 cinfo) p n
+(c) c n
+(      ) p
+(double precision) K
+(, ) p
+(parameter) K
+( :: dsmll=1.0d-8) p n
+(      ) S
+(double precision) K
+(, ) p
+(parameter) K
+( ::   zp5=0.5    ) p
+(!for sign function) c n
+(c) N
+(c --- c u s h i o n   function \(from Bleck & Benjamin, 1992\):) N
+(c --- if delp >= qqmx*dp0 >>  dp0, -cushn- returns -delp-) N
+(c --- if delp <= qqmn*dp0 << -dp0, -cushn- returns  -dp0-) N
+(c) N
+(      ) p
+(real) K
+(       qqmn,qqmx,cusha,cushb) p n
+(      ) S
+(parameter) K
+( \(qqmn=-4.0, qqmx=2.0\)  ) p
+(! shifted range) c n
+(*     parameter \(qqmn=-2.0, qqmx=4.0\)  ! traditional range) N
+(*     parameter \(qqmn=-4.0, qqmx=6.0\)  ! somewhat wider range) N
+(      ) p
+(parameter) K
+( \(cusha=qqmn**2*\(qqmx-1.0\)/\(qqmx-qqmn\)**2\)) p n
+(      ) S
+(parameter) K
+( \(cushb=1.0/qqmn\)) p n
+(c) c n
+(      ) p
+(real) K
+( qq,cushn,delp,dp0) p n
+(      ) S
+(include) K
+( ') p
+(stmt_fns.h) str
+(') p n
+(      qq\(   delp,dp0\)=) S
+(max) K
+(\(qqmn, ) p
+(min) K
+(\(qqmx, delp/dp0\)\)) p n
+(      cushn\(delp,dp0\)=dp0*) N
+(     &                \(1.0+cusha*\(1.0-cushb*qq\(delp,dp0\)\)**2\)*) N
+(     &                ) S
+(max) K
+(\(1.0, delp/\(dp0*qqmx\)\)) p n
+(c) c n
+(      dpthin = 0.001*onemm) p n
+(      thkbop = thkbot*onem) N
+(      hybrlx = 1.0/qhybrlx) N
+(c) c n
+(      ) p
+(if) K
+( \(mxlmy\) ) p
+(then) K n
+(        nums1d = ntracr + 4) p n
+(      ) S
+(else) K n
+(        nums1d = ntracr + 2) p n
+(      ) S
+(endif) K n
+(c) c n
+(      ) p
+(if) K
+(     \() p
+(.not.) K
+(isopcm\) ) p
+(then) K n
+(hybgen.f) (Page 3/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (3/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (4) 4
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        ) p
+(do) K
+( k=1,nhybrd) p n
+(          lcm\(k\) = .false.  ) S
+(!use same remapper for all layers) c n
+(        ) p
+(enddo) K
+( ) p
+(!k) c n
+(        ) p
+(do) K
+( k=nhybrd+1,kk) p n
+(          lcm\(k\) = .true.   ) S
+(!purely isopycnal layers use PCM) c n
+(        ) p
+(enddo) K
+( ) p
+(!k) c n
+(      ) p
+(endif) K n
+(c) c n
+(      ) p
+(do) K
+( l=1,isp\(j\)) p n
+(      ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifp\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilp\(j,l\)\)) p n
+(c) c n
+(      dp0cum\(1\)=0.0) p n
+(      qhrlx\( 1\)=1.0 ) S
+(!no relaxation in top layer) c n
+(      dp0ij\( 1\)=) p
+(min) K
+(\( dp0k\(1\), ) p
+(max) K
+(\( ds0k\(1\), dssk\(1\)*depths\(i,j\) \) \)) p n
+(      dp0cum\(2\)=dp0cum\(1\)+dp0ij\(1\)) N
+(      qhrlx\( 2\)=1.0 ) S
+(!no relaxation in top layer) c n
+(      p\(i,j, 2\)=p\(i,j,1\)+dp\(i,j,1,n\)) p n
+(      ) S
+(do) K
+( k=2,kk) p n
+(c ---   q is dp0k\(k\) when in surface fixed coordinates) c n
+(c ---   q is dp00i   when much deeper than surface fixed coordinates) N
+(        ) p
+(if) K
+(     \(dp0k\(k\)) p
+(.le.) K
+(dp00i\) ) p
+(then) K n
+(          q  =      dp0k\(k\)) p n
+(          qts=      0.0     ) S
+(!0 at dp0k) c n
+(        ) p
+(else) K n
+(          q  = ) p
+(max) K
+(\( dp00i,) p n
+(     &              dp0k\(k\) * dp0k\(k\)/) N
+(     &                        ) S
+(max) K
+(\( dp0k\( k\),) p n
+(     &                             p\(i,j,k\)-dp0cum\(k\) \) \)) N
+(          qts= 1.0 - \(q-dp00i\)/\(dp0k\(k\)-dp00i\)  ) S
+(!0 at dp0k, 1 at dp00i) c n
+(        ) p
+(endif) K n
+(        qhrlx\( k+1\)=1.0/\(1.0 + qts*\(hybrlx-1.0\)\)  ) p
+(!1 at  dp0k, qhybrlx at dp00i) c n
+(        dp0ij\( k\)  =) p
+(min) K
+(\( q,) p
+(max) K
+(\( ds0k\(k\), dssk\(k\)*depths\(i,j\) \) \)) p n
+(        dp0cum\(k+1\)=dp0cum\(k\)+dp0ij\(k\)) N
+(        p\(i,j, k+1\)=p\(i,j,k\)+dp\(i,j,k,n\)) N
+(      ) S
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(c --- identify the always-fixed coordinate layers) N
+(      fixlay = 1  ) p
+(!layer 1 always fixed) c n
+(      ) p
+(do) K
+( k= 2,nhybrd) p n
+(        ) S
+(if) K
+(     \(dp0cum\(k\)) p
+(.ge.) K
+(topiso\(i,j\)\) ) p
+(then) K n
+(          ) p
+(exit) K
+(  ) p
+(!layers k to nhybrd can be isopycnal) c n
+(        ) p
+(endif) K n
+(        qhrlx\(k+1\)=1.0  ) p
+(!no relaxation in fixed layers) c n
+(        fixlay = fixlay+1) p n
+(      ) S
+(enddo) K
+( ) p
+(!k) c n
+(cdiag      ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag        ) p
+(write) K
+(\(lp,') p
+(\(a,i3\)) str
+('\)) p n
+(cdiag     &        ') S
+(hybgen, always-fixed coordinate layers: 1 to ) str
+(',) p n
+(cdiag     &        fixlay) N
+(cdiag        ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag      ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(cdiag      ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag        ) p
+(write) K
+( \(lp,') p
+(\(a/\(i6,1x,2f8.3,2f9.3,f9.3\)\)) str
+('\)) p n
+(cdiag     .  ') S
+(hybgen:   thkns  minthk     dpth  mindpth   hybrlx) str
+(',) p n
+(cdiag     .  \(k,dp\(i,j,k,n\)*qonem,   dp0ij\(k\)*qonem,) N
+(cdiag     .      p\(i,j,k+1\)*qonem,dp0cum\(k+1\)*qonem,) N
+(cdiag     .      1.0/qhrlx\(k+1\),) N
+(cdiag     .   k=1,kk\)) N
+(hybgen.f) (Page 4/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (4/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5) 5
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(cdiag      ) p
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(c --- identify the deepest layer kp with significant thickness \(> dpthin\)) N
+(c) N
+(      kp = 2  ) p
+(!minimum allowed value) c n
+(      ) p
+(do) K
+( k=kk,3,-1) p n
+(        ) S
+(if) K
+( \(p\(i,j,k+1\)-p\(i,j,k\)) p
+(.ge.) K
+(dpthin\) ) p
+(then) K n
+(          kp=k) p n
+(          ) S
+(exit) K n
+(        ) p
+(endif) K n
+(      ) p
+(enddo) K n
+(c) c n
+(c --- massless or near-massless \(thickness < dpthin\) layers) N
+(c) N
+(      ) p
+(do) K
+( k=kp+1,kk) p n
+(        ) S
+(if) K
+( \(k) p
+(.le.) K
+(nhybrd\) ) p
+(then) K n
+(c ---     fill thin and massless layers on sea floor with fluid from above) c n
+(          th3d\(i,j,k,n\)=th3d\(i,j,k-1,n\)) p n
+(          saln\(i,j,k,n\)=saln\(i,j,k-1,n\)) N
+(          temp\(i,j,k,n\)=temp\(i,j,k-1,n\)) N
+(        ) S
+(elseif) K
+( \(th3d\(i,j,k,n\)) p
+(.ne.) K
+(theta\(i,j,k\)\) ) p
+(then) K n
+(          ) p
+(if) K
+( \(hybflg) p
+(.ne.) K
+(2\) ) p
+(then) K n
+(c ---       fill with saln from above) c n
+(            th3d\(i,j,k,n\)=) p
+(max) K
+(\(theta\(i,j,k\), th3d\(i,j,k-1,n\)\)) p n
+(            saln\(i,j,k,n\)=saln\(i,j,k-1,n\)) N
+(            temp\(i,j,k,n\)=tofsig\(th3d\(i,j,k,n\)+thbase,saln\(i,j,k,n\)\)) N
+(            saln\(i,j,k,n\)=sofsig\(th3d\(i,j,k,n\)+thbase,temp\(i,j,k,n\)\)) N
+(          ) S
+(else) K n
+(c ---       fill with temp from above) c n
+(            th3d\(i,j,k,n\)=) p
+(max) K
+(\(theta\(i,j,k\), th3d\(i,j,k-1,n\)\)) p n
+(            temp\(i,j,k,n\)=temp\(i,j,k-1,n\)) N
+(            saln\(i,j,k,n\)=sofsig\(th3d\(i,j,k,n\)+thbase,temp\(i,j,k,n\)\)) N
+(          ) S
+(endif) K n
+(        ) p
+(endif) K n
+(        ) p
+(do) K
+( ktr= 1,ntracr) p n
+(          tracer\(i,j,k,n,ktr\)=tracer\(i,j,k-1,n,ktr\)) N
+(        ) S
+(enddo) K n
+(        ) p
+(if) K
+( \(mxlmy\) ) p
+(then) K n
+(          q2 \(i,j,k,n\)=q2\( i,j,k-1,n\)) p n
+(          q2l\(i,j,k,n\)=q2l\(i,j,k-1,n\)) N
+(        ) S
+(endif) K n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(      k=kp  ) p
+(!at least 2) c n
+(c) N
+(cdiag      ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag        ) p
+(write) K
+(\(lp,') p
+(\(a,i3\)) str
+('\)) p n
+(cdiag     &        ') S
+(hybgen, deepest inflated layer:) str
+(',k) p n
+(cdiag        ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag      ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(      ) p
+(if) K
+(     \(lunmix        ) p
+(.and.) K
+( ) p
+(!usually .true.) c n
+(     &        k) p
+(.gt.) K
+(fixlay+1 ) p
+(.and.) K n
+(     &        theta\(i,j,k\)-epsil) p
+(.gt.) K
+(th3d\(i,j,k,n\) ) p
+(.and.) K n
+(     &        theta\(i,j,k-1\)    ) p
+(.lt.) K
+(th3d\(i,j,k,n\) ) p
+(.and.) K n
+(     &        \( th3d\(i,j,k,n\)- th3d\(i,j,k-1,n\)\)) p
+(.gt.) K n
+(     &        \(theta\(i,j,k\)  -theta\(i,j,k-1\)  \)*0.001  \) ) p
+(then) K n
+(c) c n
+(c ---   water in the deepest inflated layer with significant thickness) N
+(hybgen.f) (Page 5/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (5/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (6) 6
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c ---   \(kp\) is too light) c n
+(c ---) N
+(c ---   split layer into 2 sublayers, one near the desired density) N
+(c ---   and one exactly matching the T&S properties of layer k-1.) N
+(c ---   To prevent "runaway" T or S, the result satisfies either) N
+(c ---     abs\(T.k - T.k-1\) <= abs\(T.k-2 - T.k-1\) or) N
+(c ---     abs\(S.k - S.k-1\) <= abs\(S.k-2 - S.k-1\) ) N
+(c ---   It is also limited to a 50% change in layer thickness.) N
+(c) N
+(cdiag        ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag          ) p
+(write) K
+(\(lp,') p
+(\(a,i3\)) str
+('\)) p n
+(cdiag     &      ') S
+(hybgen, deepest inflated layer too light   \(stable\):) str
+(',k) p n
+(cdiag          ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag        ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(        delsm=) p
+(abs) K
+(\(saln\(i,j,k-2,n\)-saln\(i,j,k-1,n\)\)) p n
+(        dels =) S
+(abs) K
+(\(saln\(i,j,k-1,n\)-saln\(i,j,k,  n\)\)) p n
+(        deltm=) S
+(abs) K
+(\(temp\(i,j,k-2,n\)-temp\(i,j,k-1,n\)\)) p n
+(        delt =) S
+(abs) K
+(\(temp\(i,j,k-1,n\)-temp\(i,j,k,  n\)\)) p n
+(c ---   sanity check on deltm and delsm) c n
+(        q=) p
+(min) K
+(\(temp\(i,j,k-2,n\),temp\(i,j,k-1,n\),temp\(i,j,k,n\)\)) p n
+(        ) S
+(if) K
+(     \(q) p
+(.gt.) K
+( 6.0\) ) p
+(then) K n
+(          deltm=) p
+(min) K
+(\( deltm,  6.0*\(theta\(i,j,k\)-theta\(i,j,k-1\)\) \)) p n
+(        ) S
+(elseif) K
+( \(q) p
+(.gt.) K
+( 0.0\) ) p
+(then) K n
+(          deltm=) p
+(min) K
+(\( deltm, 10.0*\(theta\(i,j,k\)-theta\(i,j,k-1\)\) \)) p n
+(        ) S
+(else) K
+(  ) p
+(!\(q.le. 0.0\)) c n
+(          deltm=) p
+(min) K
+(\( deltm, 25.0*\(theta\(i,j,k\)-theta\(i,j,k-1\)\) \)) p n
+(        ) S
+(endif) K n
+(        delsm=) p
+(min) K
+(\( delsm, 1.3*\(theta\(i,j,k\)-theta\(i,j,k-1\)\) \)) p n
+(        qts=0.0) N
+(        ) S
+(if) K
+(     \(delt) p
+(.gt.) K
+(epsil\) ) p
+(then) K n
+(          qts=) p
+(max) K
+(\(qts, \() p
+(min) K
+(\(deltm, 2.0*delt\)-delt\)/delt\)  ) p
+(! qts<=1.0) c n
+(        ) p
+(endif) K n
+(        ) p
+(if) K
+(     \(dels) p
+(.gt.) K
+(epsil\) ) p
+(then) K n
+(          qts=) p
+(max) K
+(\(qts, \() p
+(min) K
+(\(delsm, 2.0*dels\)-dels\)/dels\)  ) p
+(! qts<=1.0) c n
+(        ) p
+(endif) K n
+(        q=\(theta\(i,j,k\)-th3d\(i,j,k,  n\)\)/) p n
+(     &    \(theta\(i,j,k\)-th3d\(i,j,k-1,n\)\)) N
+(        q=) S
+(min) K
+(\(q,qts/\(1.0+qts\)\)  ) p
+(! upper sublayer <= 50% of total) c n
+(        q=qhrlx\(k\)*q) p n
+(c ---   qhrlx is relaxation coefficient \(inverse baroclinic time steps\)) c n
+(        p_hat=q*\(p\(i,j,k+1\)-p\(i,j,k\)\)) p n
+(        p\(i,j,k\)=p\(i,j,k\)+p_hat) N
+(        ) S
+(if) K
+(     \(hybflg) p
+(.eq.) K
+(0\) ) p
+(then) K
+(  ) p
+(!T&S) c n
+(          temp\(i,j,k,n\)=temp\(i,j,k,n\)+\(q/\(1.0-q\)\)*\(temp\(i,j,k,n\)  -) p n
+(     &                                             temp\(i,j,k-1,n\) \)) N
+(          saln\(i,j,k,n\)=saln\(i,j,k,n\)+\(q/\(1.0-q\)\)*\(saln\(i,j,k,n\)  -) N
+(     &                                             saln\(i,j,k-1,n\) \)) N
+(          th3d\(i,j,k,n\)=sig\(temp\(i,j,k,n\),saln\(i,j,k,n\)\)-thbase) N
+(        ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(1\) ) p
+(then) K
+(  ) p
+(!th&S) c n
+(          th3d\(i,j,k,n\)=th3d\(i,j,k,n\)+\(q/\(1.0-q\)\)*\(th3d\(i,j,k,n\)  -) p n
+(     &                                             th3d\(i,j,k-1,n\) \)) N
+(          saln\(i,j,k,n\)=saln\(i,j,k,n\)+\(q/\(1.0-q\)\)*\(saln\(i,j,k,n\)  -) N
+(     &                                             saln\(i,j,k-1,n\) \)) N
+(          temp\(i,j,k,n\)=tofsig\(th3d\(i,j,k,n\)+thbase,saln\(i,j,k,n\)\)) N
+(        ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(2\) ) p
+(then) K
+(  ) p
+(!th&T) c n
+(          th3d\(i,j,k,n\)=th3d\(i,j,k,n\)+\(q/\(1.0-q\)\)*\(th3d\(i,j,k,n\)  -) p n
+(     &                                             th3d\(i,j,k-1,n\) \)) N
+(          temp\(i,j,k,n\)=temp\(i,j,k,n\)+\(q/\(1.0-q\)\)*\(temp\(i,j,k,n\)  -) N
+(hybgen.f) (Page 6/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (6/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7) 7
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     &                                             temp\(i,j,k-1,n\) \)) p n
+(          saln\(i,j,k,n\)=sofsig\(th3d\(i,j,k,n\)+thbase,temp\(i,j,k,n\)\)) N
+(        ) S
+(endif) K n
+(        ) p
+(if) K
+(     \(ntracr) p
+(.gt.) K
+(0 ) p
+(.and.) K
+( p_hat) p
+(.ne.) K
+(0.0\) ) p
+(then) K n
+(          qtr=p_hat/\(p\(i,j,k\)-p\(i,j,k-1\)\)  ) p
+(!ok because <1.0 and >0.0) c n
+(          ) p
+(do) K
+( ktr= 1,ntracr) p n
+(            ) S
+(if) K
+(     \(trcflg\(ktr\)) p
+(.eq.) K
+(2\) ) p
+(then) K
+( ) p
+(!temperature tracer) c n
+(              tracer\(i,j,k,n,ktr\)=tracer\(i,j,k,n,ktr\)+) p n
+(     &                           \(q/\(1.0-q\)\)*\(tracer\(i,j,k,  n,ktr\)-) N
+(     &                                        tracer\(i,j,k-1,n,ktr\)\)) N
+(            ) S
+(else) K
+( ) p
+(!standard tracer - not split into two sub-layers) c n
+(              tracer\(i,j,k-1,n,ktr\)=tracer\(i,j,k-1,n,ktr\)+) p n
+(     &                                   qtr*\(tracer\(i,j,k,  n,ktr\)-) N
+(     &                                        tracer\(i,j,k-1,n,ktr\)\)) N
+(cdiag              ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag                ) p
+(write) K
+(\(lp,') p
+(\(a,i4,i3,5e12.3\)) str
+('\)) p n
+(cdiag     &            ') S
+(hybgen, 10\(+\):) str
+(',) p n
+(cdiag     &            k,ktr,p_hat,p\(i,j,k\),p\(i,j,k-1\),) N
+(cdiag     &            qtr,tracer\(i,j,k-1,n,ktr\)) N
+(cdiag                ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag              ) S
+(endif) K
+( ) p
+(!debug) c n
+(            ) p
+(endif) K
+( ) p
+(!trcflg) c n
+(          ) p
+(enddo) K
+( ) p
+(!ktr) c n
+(        ) p
+(endif) K
+( ) p
+(!tracers) c n
+(        ) p
+(if) K
+( \(mxlmy ) p
+(.and.) K
+( p_hat) p
+(.ne.) K
+(0.0\) ) p
+(then) K n
+(          qtr=p_hat/\(p\(i,j,k\)-p\(i,j,k-1\)\)  ) p
+(!ok because <1.0 and >0.0) c n
+(          q2\( i,j,k-1,n\)=q2\( i,j,k-1,n\)+) p n
+(     &                     qtr*\(q2\( i,j,k,n\)-q2\( i,j,k-1,n\)\)) N
+(          q2l\(i,j,k-1,n\)=q2l\(i,j,k-1,n\)+) N
+(     &                     qtr*\(q2l\(i,j,k,n\)-q2l\(i,j,k-1,n\)\)) N
+(cdiag              ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag               ) p
+(write) K
+(\(lp,') p
+(\(a,i4,i3,6e12.3\)) str
+('\)) p n
+(cdiag     &            ') S
+(hybgen, 10\(+\):) str
+(',) p n
+(cdiag     &            k,0,p_hat,p\(i,j,k\)-p\(i,j,k-1\),p\(i,j,k+1\)-p\(i,j,k\),) N
+(cdiag     &            qtr,q2\(i,j,k-1,n\),q2l\(i,j,k-1,n\)) N
+(cdiag               ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag              ) S
+(endif) K
+( ) p
+(!debug) c n
+(        ) p
+(endif) K n
+(cdiag        ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag          ) p
+(write) K
+(\(lp,') p
+(\(a,i3,f6.3,5f8.3\)) str
+('\)) p n
+(cdiag     &      ') S
+(hybgen, 10\(+\):) str
+(',) p n
+(cdiag     &      k,q,temp\(i,j,k,n\),saln\(i,j,k,n\),) N
+(cdiag     &          th3d\(i,j,k,n\)+thbase,theta\(i,j,k\)+thbase) N
+(cdiag          ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag        ) S
+(endif) K
+( ) p
+(!debug) c n
+(cdiag        ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag          ) p
+(write) K
+(\(lp,') p
+(\(a,i3,f6.3,5f8.3\)) str
+('\)) p n
+(cdiag     &      ') S
+(hybgen, 10\(-\):) str
+(',) p n
+(cdiag     &      k,0.0,temp\(i,j,k,n\),saln\(i,j,k,n\),) N
+(cdiag     &          th3d\(i,j,k,n\)+thbase,theta\(i,j,k\)+thbase) N
+(cdiag          ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag        ) S
+(endif) K
+( ) p
+(!debug) c n
+(      ) p
+(endif) K
+( ) p
+(!too light) c n
+(c) N
+(c --- store one-dimensional arrays of -temp-, -saln-, and -p- for the 'old') N
+(c --- vertical grid before attempting to restore isopycnic conditions) N
+(      pres\(1\)=p\(i,j,1\)) p n
+(      ) S
+(do) K
+( k=1,kk) p n
+(        ) S
+(if) K
+(     \(hybflg) p
+(.eq.) K
+(0\) ) p
+(then) K
+(  ) p
+(!T&S) c n
+(hybgen.f) (Page 7/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (7/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (8) 8
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(          s1d\(k,1\) = temp\(i,j,k,n\)) p n
+(          s1d\(k,2\) = saln\(i,j,k,n\)) N
+(        ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(1\) ) p
+(then) K
+(  ) p
+(!th&S) c n
+(          s1d\(k,1\) = th3d\(i,j,k,n\)) p n
+(          s1d\(k,2\) = saln\(i,j,k,n\)) N
+(        ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(2\) ) p
+(then) K
+(  ) p
+(!th&T) c n
+(          s1d\(k,1\) = th3d\(i,j,k,n\)) p n
+(          s1d\(k,2\) = temp\(i,j,k,n\)) N
+(        ) S
+(endif) K n
+(        ) p
+(do) K
+( ktr= 1,ntracr) p n
+(          s1d\(k,2+ktr\) = tracer\(i,j,k,n,ktr\)) N
+(        ) S
+(enddo) K n
+(        ) p
+(if) K
+( \(mxlmy\) ) p
+(then) K n
+(          s1d\(k,ntracr+3\) = q2\( i,j,k,n\)) p n
+(          s1d\(k,ntracr+4\) = q2l\(i,j,k,n\)) N
+(        ) S
+(endif) K n
+(        pres\(k+1\)=p\(i,j,k+1\)) p n
+(        dprs\(k\)  =pres\(k+1\)-pres\(k\)) N
+(        dpi\( k\)  =) S
+(max) K
+(\(dprs\(k\),dpthin\)) p n
+(c) c n
+(        ) p
+(if) K
+(     \(isopcm\) ) p
+(then) K n
+(          ) p
+(if) K
+(     \(k) p
+(.le.) K
+(fixlay\) ) p
+(then) K n
+(            lcm\(k\) = .false.  ) p
+(!fixed layers are never PCM) c n
+(          ) p
+(else) K n
+(c ---       thin and isopycnal layers remapped with PCM.) c n
+(            lcm\(k\) = k) p
+(.gt.) K
+(nhybrd) p n
+(     &               ) S
+(.or.) K
+( dprs\(k\)) p
+(.le.) K
+(dpthin) p n
+(     &               ) S
+(.or.) K
+( \(dprs\(k\)) p
+(.gt.) K
+(dp0kp\(k\) ) p
+(.and.) K n
+(     &                     ) p
+(abs) K
+(\(th3d\(i,j,k,n\)-theta\(i,j,k\)\)) p
+(.lt.) K
+(hybiso\)) p n
+(          ) S
+(endif) K
+( ) p
+(!k<=fixlay:else) c n
+(        ) p
+(endif) K
+( ) p
+(!isopcm) c n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(c --- try to restore isopycnic conditions by moving layer interfaces) N
+(c --- qhrlx\(k\) are relaxation coefficients \(inverse baroclinic time steps\)) N
+(c) N
+(      ) p
+(if) K
+( \(fixlay) p
+(.ge.) K
+(1\) ) p
+(then) K n
+(c) c n
+(c ---   maintain constant thickness, layer k = 1) N
+(        k=1) p n
+(        p_hat=p\(i,j,k\)+dp0ij\(k\)) N
+(        p\(i,j,k+1\)=) S
+(min) K
+(\(p_hat,p\(i,j,k+2\)\)) p n
+(      ) S
+(endif) K n
+(c) c n
+(      ) p
+(do) K
+( k=2,nhybrd) p n
+(c) c n
+(cdiag   ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag     ) p
+(write) K
+(\(cinfo,') p
+(\(a9,i2.2,1x\)) str
+('\) ') p
+(  do 88 k=) str
+(',k) p n
+(cdiag 109 ) S
+(format) K
+( \(i9,2i5,a,a/\(i9,8x,a,a,i3,f9.2,f8.2,f9.2,f8.2\)\)) p n
+(cdiag     ) S
+(write) K
+(\(lp,109\) nstep,itest+i0,jtest+j0,) p n
+(cdiag.      cinfo,') S
+(:    othkns  odpth    nthkns  ndpth) str
+(',) p n
+(cdiag.      \(nstep,cinfo,') S
+(:) str
+(',ka,) p n
+(cdiag.      \(pres\(ka+1\)-) N
+(cdiag.       pres\(ka\)   \)*qonem,) N
+(cdiag.       pres\(ka+1\)  *qonem,) N
+(cdiag.      \(p\(itest,jtest,ka+1\)-) N
+(cdiag.       p\(itest,jtest,ka\)   \)*qonem,) N
+(cdiag.       p\(itest,jtest,ka+1\)  *qonem,ka=1,kk\)) N
+(cdiag     ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(hybgen.f) (Page 8/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (8/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (9) 9
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(cdiag   ) p
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(        ) p
+(if) K
+( \(k) p
+(.le.) K
+(fixlay\) ) p
+(then) K n
+(c) c n
+(c ---     maintain constant thickness, k <= fixlay) N
+(          p_hat=p\(i,j,k\)+dp0ij\(k\)) p n
+(          p\(i,j,k+1\)=) S
+(min) K
+(\(p_hat,p\(i,j,k+2\)\)) p n
+(c) c n
+(cdiag     ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag       ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\) ') p
+(hybgen, fixlay :) str
+(',) p n
+(cdiag&                                k,p\(i,j,k\)*qonem) N
+(cdiag       ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag     ) S
+(endif) K
+( ) p
+(!debug) c n
+(        ) p
+(else) K n
+(c) c n
+(c ---     do not maintain constant thickness, k > fixlay) N
+(c) N
+(          ) p
+(if) K
+(     \(th3d\(i,j,k,n\)) p
+(.gt.) K
+(theta\(i,j,k\)+epsil ) p
+(.and.) K n
+(     &            k) p
+(.gt.) K
+(fixlay+1\) ) p
+(then) K
+( ) p n
+(c) c n
+(c ---       water in layer k is too dense) N
+(c ---       try to dilute with water from layer k-1) N
+(c ---       do not move interface if k = fixlay + 1) N
+(c) N
+(            ) p
+(if) K
+( \(th3d\(i,j,k-1,n\)) p
+(.ge.) K
+(theta\(i,j,k-1\) ) p
+(.or.) K n
+(     &          p\(i,j,k\)) p
+(.le.) K
+(dp0cum\(k\)+onem ) p
+(.or.) K n
+(     &          p\(i,j,k+1\)-p\(i,j,k\)) p
+(.le.) K
+(p\(i,j,k\)-p\(i,j,k-1\)\) ) p
+(then) K n
+(c) c n
+(c ---         if layer k-1 is too light, thicken the thinner of the two,) N
+(c ---         i.e. skip this layer if it is thicker.) N
+(c) N
+(cdiag         ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag           ) p
+(write) K
+(\(lp,') p
+(\(a,3x,i2.2,1pe13.5\)) str
+('\)) p n
+(cdiag&                ') S
+(hybgen, too dense:) str
+(',k,th3d\(i,j,k,n\)-theta\(i,j,k\)) p n
+(cdiag         ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag         ) S
+(endif) K
+( ) p
+(!debug) c n
+(c ) N
+(              ) p
+(if) K
+(     \(\(theta\(i,j,k\)-th3d\(i,j,k-1,n\)\)) p
+(.le.) K
+(epsil\) ) p
+(then) K n
+(c               layer k-1 too dense, take entire layer) c n
+(                p_hat=p\(i,j,k-1\)+dp0ij\(k-1\)) p n
+(              ) S
+(else) K n
+(                q=\(theta\(i,j,k\)-th3d\(i,j,k,  n\)\)/) p n
+(     &            \(theta\(i,j,k\)-th3d\(i,j,k-1,n\)\)         ) S
+(! -1 <= q < 0) c n
+(                p_hat0=p\(i,j,k\)+q*\(p\(i,j,k+1\)-p\(i,j,k\)\)  ) p
+(! <p\(i,j,k\)) c n
+(c               maintain minimum thickess of layer k-1.) N
+(                p_hat =p\(i,j,k-1\)+cushn\(p_hat0-p\(i,j,k-1\),dp0ij\(k-1\)\)) p n
+(              ) S
+(end) K
+( ) p
+(if) K n
+(c) c n
+(c ---         if isopycnic conditions cannot be achieved because of a blocking) N
+(c ---         layer in the interior ocean, move interface k-1 \(and k-2 if) N
+(c ---         necessary\) upward) N
+(c) N
+(              ) p
+(if) K
+(     \(k) p
+(.le.) K
+(fixlay+2\) ) p
+(then) K n
+(c ---           do nothing.) c n
+(              ) p
+(else) K
+( ) p
+(if) K
+( \(p_hat) p
+(.ge.) K
+(p\(i,j,k\) ) p
+(.and.) K n
+(     &                 p\(i,j,k-1\)) p
+(.gt.) K
+(dp0cum\(k-1\)+tenm ) p
+(.and.) K n
+(     &                \(p\(i,j,kk+1\)-p\(i,j,k-1\)) p
+(.lt.) K
+(thkbop ) p
+(.or.) K n
+(     &                 p\(i,j,k-1\) -p\(i,j,k-2\)) p
+(.gt.) K
+(qqmx*dp0ij\(k-2\)\)\) ) p
+(then) K
+( ) p
+(! k.gt.2) c n
+(                p_hat2=p\(i,j,k-2\)+) p n
+(hybgen.f) (Page 9/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (9/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (10) 10
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     &                 cushn\(p\(i,j,k-1\)-p_hat+p_hat0-p\(i,j,k-2\),) p n
+(     &                       dp0ij\(k-2\)\)) N
+(                ) S
+(if) K
+( \(p_hat2) p
+(.lt.) K
+(p\(i,j,k-1\)-onemm\) ) p
+(then) K n
+(                  p\(i,j,k-1\)=\(1.0-qhrlx\(k-1\)\)*p\(i,j,k-1\) +) p n
+(     &                            qhrlx\(k-1\) *) S
+(max) K
+(\(p_hat2,) p n
+(     &                                    2.0*p\(i,j,k-1\)-p_hat\)) N
+(cdiag             ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag               ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\) ') p
+(hybgen,  1blocking :) str
+(',) p n
+(cdiag&                    k-1,p\(i,j,k-1\)*qonem) N
+(cdiag               ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag             ) S
+(endif) K
+( ) p
+(!debug) c n
+(                  p_hat=p\(i,j,k-1\)+cushn\(p_hat0-p\(i,j,k-1\),dp0ij\(k-1\)\)) p n
+(                ) S
+(elseif) K
+( \(k) p
+(.le.) K
+(fixlay+3\) ) p
+(then) K n
+(c ---             do nothing.) c n
+(                ) p
+(elseif) K
+( \(p\(i,j,k-2\)) p
+(.gt.) K
+(dp0cum\(k-2\)+tenm ) p
+(.and.) K n
+(     &                 \(p\(i,j,kk+1\)-p\(i,j,k-2\)) p
+(.lt.) K
+(thkbop ) p
+(.or.) K n
+(     &                  p\(i,j,k-2\) -p\(i,j,k-3\)) p
+(.gt.) K
+(qqmx*dp0ij\(k-3\)\)\) ) p
+(then) K n
+(                  p_hat3=p\(i,j,k-3\)+cushn\(p\(i,j,k-2\)-p_hat+) p n
+(     &                              p_hat0-p\(i,j,k-3\),) N
+(     &                              dp0ij\(k-3\)\)) N
+(                  ) S
+(if) K
+( \(p_hat3) p
+(.lt.) K
+(p\(i,j,k-2\)-onemm\) ) p
+(then) K n
+(                    p\(i,j,k-2\)=\(1.0-qhrlx\(k-2\)\)*p\(i,j,k-2\) +) p n
+(     &                              qhrlx\(k-2\)*) S
+(max) K
+(\(p_hat3,) p n
+(     &                                      2.0*p\(i,j,k-2\)-p\(i,j,k-1\)\)) N
+(cdiag               ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag                 ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\) ') p
+(hybgen,  2blocking :) str
+(',) p n
+(cdiag&                      k-2,p\(i,j,k-2\)*qonem) N
+(cdiag                 ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag               ) S
+(endif) K
+( ) p
+(!debug) c n
+(                    p_hat2=p\(i,j,k-2\)+cushn\(p\(i,j,k-1\)-p_hat+) p n
+(     &                                      p_hat0-p\(i,j,k-2\),) N
+(     &                                      dp0ij\(k-2\)\)) N
+(                    ) S
+(if) K
+( \(p_hat2) p
+(.lt.) K
+(p\(i,j,k-1\)-onemm\) ) p
+(then) K n
+(                      p\(i,j,k-1\)=\(1.0-qhrlx\(k-1\)\)*p\(i,j,k-1\) +) p n
+(     &                                qhrlx\(k-1\) *) S
+(max) K
+(\(p_hat2,) p n
+(     &                                        2.0*p\(i,j,k-1\)-p_hat\)) N
+(cdiag                 ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag                   ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\) ') p
+(hybgen,  3blocking :) str
+(',) p n
+(cdiag&                             k-1,p\(i,j,k-1\)*qonem) N
+(cdiag                   ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag                 ) S
+(endif) K
+( ) p
+(!debug) c n
+(                      p_hat=p\(i,j,k-1\)+cushn\(p_hat0-p\(i,j,k-1\),) p n
+(     &                                       dp0ij\(k-1\)\)) N
+(                    ) S
+(endif) K
+( ) p
+(!p_hat2) c n
+(                  ) p
+(endif) K
+( ) p
+(!p_hat3) c n
+(                ) p
+(endif) K
+( ) p
+(!p_hat2:blocking) c n
+(              ) p
+(endif) K
+( ) p
+(!blocking) c n
+(c) N
+(c ---         move upper interface up or down) N
+(              p\(i,j,k\)=) p
+(min) K
+(\( \(1.0-qhrlx\(k\)\)*p\(i,j,k\) +) p n
+(     &                           qhrlx\(k\) *p_hat,) N
+(     &                      p\(i,j,k+1\) \)) N
+(c) c n
+(cdiag         ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag           ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\) ') p
+(hybgen, entrain\(k\) :) str
+(',) p n
+(cdiag&                                    k,p\(i,j,k\)*qonem) N
+(cdiag           ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag         ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(hybgen.f) (Page 10/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (10/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (11) 11
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(            ) p
+(endif) K
+(  ) p
+(!too-dense adjustment) c n
+(c) N
+(          ) p
+(elseif) K
+( \(th3d\(i,j,k,n\)) p
+(.lt.) K
+(theta\(i,j,k\)-epsil\) ) p
+(then) K
+(   ) p
+(! layer too light) c n
+(c) N
+(c ---       water in layer k is too light) N
+(c ---       try to dilute with water from layer k+1) N
+(c ---       do not entrain if layer k touches bottom) N
+(c) N
+(            ) p
+(if) K
+( \(p\(i,j,k+1\)) p
+(.lt.) K
+(p\(i,j,kk+1\)\) ) p
+(then) K
+(  ) p
+(! k<kk) c n
+(              ) p
+(if) K
+( \(th3d\(i,j,k+1,n\)) p
+(.le.) K
+(theta\(i,j,k+1\) ) p
+(.or.) K n
+(     &            p\(i,j,k+1\)) p
+(.le.) K
+(dp0cum\(k+1\)+onem    ) p
+(.or.) K n
+(     &            p\(i,j,k+1\)-p\(i,j,k\)) p
+(.lt.) K
+(p\(i,j,k+2\)-p\(i,j,k+1\)\) ) p
+(then) K n
+(c) c n
+(c ---           if layer k+1 is too dense, thicken the thinner of the two,) N
+(c ---           i.e. skip this layer if it is not thinner than the other.) N
+(c) N
+(cdiag           ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag             ) p
+(write) K
+(\(lp,') p
+(\(a,3x,i2.2,1pe13.5\)) str
+('\)) p n
+(cdiag&                 ') S
+(hybgen, too light:) str
+(',k,) p n
+(cdiag&                  theta\(i,j,k\)-th3d\(i,j,k,n\)) N
+(cdiag             ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag           ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(                ) p
+(if) K
+(     \(\(th3d\(i,j,k+1,n\)-theta\(i,j,k\)\)) p
+(.le.) K
+(epsil\) ) p
+(then) K n
+(c                 layer k-1 too light, take entire layer) c n
+(                  p_hat=p\(i,j,k+2\)) p n
+(                ) S
+(else) K n
+(                  q=\(th3d\(i,j,k,  n\)-theta\(i,j,k\)\)/) p n
+(     &              \(th3d\(i,j,k+1,n\)-theta\(i,j,k\)\)          ) S
+(!-1 <= q < 0) c n
+(                  p_hat=p\(i,j,k+1\)+q*\(p\(i,j,k\)-p\(i,j,k+1\)\)  ) p
+(!>p\(i,j,k+1\)) c n
+(                ) p
+(endif) K n
+(c) c n
+(c ---           if layer k+1 does not touch the bottom then maintain minimum) N
+(c ---           thicknesses of layers k and k+1 as much as possible,) N
+(c ---           but permit layers to collapse to zero thickness at the bottom) N
+(c) N
+(                ) p
+(if) K
+(     \(p\(i,j,k+2\)) p
+(.lt.) K
+(p\(i,j,kk+1\)\) ) p
+(then) K n
+(                  ) p
+(if) K
+(     \(p\(i,j,kk+1\)-p\(i,j,k\)) p
+(.gt.) K n
+(     &                    dp0ij\(k\)+dp0ij\(k+1\)     \) ) p
+(then) K n
+(                    p_hat=p\(i,j,k+2\)-cushn\(p\(i,j,k+2\)-p_hat,dp0ij\(k+1\)\)) p n
+(                  ) S
+(endif) K n
+(                  p_hat=p\(i,j,k\)+) p
+(max) K
+(\(p_hat-p\(i,j,k\),dp0ij\(k\)\)) p n
+(                  p_hat=) S
+(min) K
+(\(p_hat,) p n
+(     &                      ) S
+(max) K
+(\(0.5*\(p\(i,j,k+1\)+p\(i,j,k+2\)\),) p n
+(     &                               p\(i,j,k+2\)-dp0ij\(k+1\)\)\)) N
+(                ) S
+(else) K n
+(                  p_hat=) p
+(min) K
+(\(p\(i,j,k+2\),p_hat\)) p n
+(                ) S
+(endif) K
+( ) p
+(!p.k+2<p.kk+1) c n
+(                ) p
+(if) K
+( \(p_hat) p
+(.gt.) K
+(p\(i,j,k+1\)\) ) p
+(then) K n
+(c ---             entrain layer k+1 water into layer k.) c n
+(                  p\(i,j,k+1\)=\(1.0-qhrlx\(k+1\)\)*p\(i,j,k+1\) +) p n
+(     &                            qhrlx\(k+1\) *p_hat) N
+(                ) S
+(endif) K
+( ) p
+(!entrain) c n
+(c) N
+(cdiag           ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag             ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\)) p n
+(cdiag&                 ') S
+(hybgen, entrain\(k+\):) str
+(',k,p\(i,j,k+1\)*qonem) p n
+(cdiag             ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag           ) S
+(endif) K
+( ) p
+(!debug) c n
+(hybgen.f) (Page 11/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (11/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (12) 12
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c) c n
+(              ) p
+(endif) K
+( ) p
+(!too-light adjustment) c n
+(            ) p
+(endif) K
+( ) p
+(!above bottom) c n
+(          ) p
+(endif) K
+( ) p
+(!too dense or too light) c n
+(c) N
+(c ---     if layer above is still too thin, move interface down.) N
+(          p_hat0=) p
+(min) K
+(\(p\(i,j,k-1\)+dp0ij\(k-1\),p\(i,j,kk+1\)\)) p n
+(          ) S
+(if) K
+( \(p_hat0) p
+(.gt.) K
+(p\(i,j,k\)\) ) p
+(then) K n
+(            p_hat =\(1.0-qhrlx\(k-1\)\)*p\(i,j,k\)+) p n
+(     &                  qhrlx\(k-1\) *p_hat0) N
+(            p\(i,j,k\)=) S
+(min) K
+(\(p_hat,p\(i,j,k+1\)\)) p n
+(c) c n
+(cdiag       ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag         ) p
+(write) K
+(\(lp,') p
+(\(a,i3.2,f8.2\)) str
+('\)) p n
+(cdiag&             ') S
+(hybgen, min. thknss \(k+\):) str
+(',k,p\(i,j,k+1\)*qonem) p n
+(cdiag         ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag       ) S
+(endif) K
+( ) p
+(!debug) c n
+(          ) p
+(endif) K n
+(c) c n
+(        ) p
+(endif) K
+( ) p
+(!constant thickness \(yes,no\)) c n
+(c) N
+(      ) p
+(enddo) K
+( ) p
+(!k  vertical coordinate relocation) c n
+(c) N
+(c --- remap scalar field profiles from the 'old' vertical) N
+(c --- grid onto the 'new' vertical grid.) N
+(c) N
+(      ) p
+(if) K
+(     \(lconserve\) ) p
+(then) K
+(  ) p
+(!usually .false.) c n
+(        ) p
+(do) K
+( ktr=1,nums1d) p n
+(          asum\(ktr,1\) = 0.d0) N
+(          asum\(ktr,2\) = 0.d0) N
+(          asum\(ktr,3\) = 0.d0) N
+(        ) S
+(enddo) K
+( ) p
+(!ktr) c n
+(      ) p
+(endif) K n
+(c) c n
+(      prsf\(1\) = p\(i,j,1\)) p n
+(      ) S
+(do) K
+( k=1,kk) p n
+(        dp\(i,j,k,n\) = ) S
+(max) K
+(\( p\(i,j,k+1\)-prsf\(k\), 0.0 \)  ) p
+(!enforce interface order) c n
+(c ---   to avoid roundoff errors in -dpudpv- after restart, make sure p=p\(dp\)) N
+(        prsf\(k+1\)   = prsf\(k\) + dp\(i,j,k,n\)) p n
+(        p\(i,j,k+1\)  = prsf\(k+1\)) N
+(      ) S
+(enddo) K n
+(      ) p
+(if) K
+(     \(hybmap) p
+(.eq.) K
+(0\) ) p
+(then) K
+( ) p
+(!PCM) c n
+(        ) p
+(call) K
+( ) p
+(hybgen_pcm_remap) l
+(\(s1d,pres,dprs,) p n
+(     &                        f1d,prsf,kk,nums1d,dpthin\)) N
+(      ) S
+(elseif) K
+( \(hybmap) p
+(.eq.) K
+(1\) ) p
+(then) K
+( ) p
+(!PLM \(as in 2.1.08\)) c n
+(        ) p
+(call) K
+( ) p
+(hybgen_plm_coefs) l
+(\(s1d,     dprs,lcm,c1d,) p n
+(     &                                 kk,nums1d,dpthin\)) N
+(        ) S
+(call) K
+( ) p
+(hybgen_plm_remap) l
+(\(s1d,pres,dprs,    c1d,) p n
+(     &                        f1d,prsf,kk,nums1d,dpthin\)) N
+(      ) S
+(elseif) K
+( \(hybmap) p
+(.eq.) K
+(2\) ) p
+(then) K
+( ) p
+(!PPM) c n
+(        ) p
+(call) K
+( ) p
+(hybgen_ppm_coefs) l
+(\(s1d,     dpi, lcm,c1d,) p n
+(     &                                 kk,nums1d,dpthin\)) N
+(        ) S
+(call) K
+( ) p
+(hybgen_ppm_remap) l
+(\(s1d,pres,dprs,    c1d,) p n
+(     &                        f1d,prsf,kk,nums1d,dpthin\)) N
+(      ) S
+(endif) K n
+(      ) p
+(do) K
+( k=1,kk) p n
+(        ) S
+(if) K
+(     \(hybflg) p
+(.eq.) K
+(0\) ) p
+(then) K
+(  ) p
+(!T&S) c n
+(          temp\(i,j,k,n\) = f1d\(k,1\)) p n
+(          saln\(i,j,k,n\) = f1d\(k,2\)) N
+(hybgen.f) (Page 12/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (12/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (13) 13
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(          th3d\(i,j,k,n\)=sig\(temp\(i,j,k,n\),saln\(i,j,k,n\)\)-thbase) p n
+(        ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(1\) ) p
+(then) K
+(  ) p
+(!th&S) c n
+(          th3d\(i,j,k,n\) = f1d\(k,1\)) p n
+(          saln\(i,j,k,n\) = f1d\(k,2\)) N
+(          temp\(i,j,k,n\)=tofsig\(th3d\(i,j,k,n\)+thbase,) N
+(     &                         saln\(i,j,k,n\)\)) N
+(*         saln\(i,j,k,n\)=sofsig\(th3d\(i,j,k,n\)+thbase,) c n
+(*    &                         temp\(i,j,k,n\)\)) N
+(        ) p
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(2\) ) p
+(then) K
+(  ) p
+(!th&T) c n
+(          th3d\(i,j,k,n\) = f1d\(k,1\)) p n
+(          temp\(i,j,k,n\) = f1d\(k,2\)) N
+(          saln\(i,j,k,n\)=sofsig\(th3d\(i,j,k,n\)+thbase,) N
+(     &                         temp\(i,j,k,n\)\)) N
+(        ) S
+(endif) K n
+(        ) p
+(do) K
+( ktr= 1,ntracr) p n
+(          tracer\(i,j,k,n,ktr\) = f1d\(k,2+ktr\)) N
+(        ) S
+(enddo) K n
+(        ) p
+(if) K
+( \(mxlmy\) ) p
+(then) K n
+(          q2\( i,j,k,n\) = f1d\(k,ntracr+3\)) p n
+(          q2l\(i,j,k,n\) = f1d\(k,ntracr+4\)) N
+(        ) S
+(endif) K n
+(c) c n
+(        ) p
+(if) K
+(     \(lconserve\) ) p
+(then) K
+(  ) p
+(!usually .false.) c n
+(          zthk = dp\(i,j,k,n\)) p n
+(          ) S
+(do) K
+( ktr= 1,nums1d) p n
+(            asum\(ktr,1\) = asum\(ktr,1\) + s1d\(k,ktr\)*dprs\(k\)) N
+(            asum\(ktr,2\) = asum\(ktr,2\) + f1d\(k,ktr\)*zthk) N
+(          ) S
+(enddo) K n
+(        ) p
+(endif) K
+( ) p
+(!lconserve) c n
+(c) N
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(cdiag ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(*       write \(lp,'\(i9,3a/\(i9,3f23.17\)\)'\)) c n
+(*    &  nstep,) N
+(*    &  '                   dens',) N
+(*    &  '                  thkns',) N
+(*    &  '                   dpth',) N
+(*    &  \(k,tthe\(k,1\),    dprs\(k\)*qonem,    pres\(k+1\)*qonem,) N
+(*    &   k,th3d\(i,j,k,n\),dp\(i,j,k,n\)*qonem,p\(i,j,k+1\)*qonem,) N
+(*    &  k=1,kk\)) N
+(cdiag   ) p
+(write) K
+( \(lp,') p
+(\(i9,3a/\(i9,3f23.17\)\)) str
+('\)) p n
+(cdiag&  nstep,) N
+(cdiag&  ') S
+(               tracer.1) str
+(',) p n
+(cdiag&  ') S
+(                  thkns) str
+(',) p n
+(cdiag&  ') S
+(                   dpth) str
+(',) p n
+(cdiag&  \(k,ttrc\(      k,1,1\),  dprs\(k\)*qonem,   pres\(k+1\)*qonem,) N
+(cdiag&   k,tracer\(i,j,k,n,1\),dp\(i,j,k,n\)*qonem,p\(i,j,k+1\)*qonem,) N
+(cdiag&  k=1,kk\)) N
+(cdiag   ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(      ) p
+(if) K
+(     \(lconserve\) ) p
+(then) K
+(  ) p
+(!usually .false.) c n
+(c) N
+(c ---   enforce water column conservation) N
+(c) N
+(        ) p
+(do) K
+( ktr=1,nums1d) p n
+(          q = asum\(ktr,1\)-asum\(ktr,2\)) N
+(          ) S
+(if) K
+(     \(q) p
+(.eq.) K
+(0.0\) ) p
+(then) K n
+(hybgen.f) (Page 13/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (13/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (14) 14
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(            offset\(ktr\) = 0.0) p n
+(          ) S
+(elseif) K
+( \() p
+(abs) K
+(\(asum\(ktr,2\)\)) p
+(.lt.) K
+(2.0*) p
+(abs) K
+(\(q\)\) ) p
+(then) K n
+(            offset\(ktr\) = ) p
+(sign) K
+(\(zp5,q*asum\(ktr,2\)\)  ) p
+(!        -0.5 or  +0.5) c n
+(          ) p
+(else) K n
+(            offset\(ktr\) =          q/asum\(ktr,2\)   ) p
+(!between -0.5 and +0.5) c n
+(          ) p
+(endif) K n
+(        ) p
+(enddo) K
+( ) p
+(!ktr) c n
+(        ) p
+(do) K
+( k=1,kk) p n
+(          ) S
+(if) K
+(     \(hybflg) p
+(.eq.) K
+(0\) ) p
+(then) K
+(  ) p
+(!T&S) c n
+(            temp\(i,j,k,n\)=temp\(i,j,k,n\)*\(1.0+offset\(1\)\)) p n
+(            saln\(i,j,k,n\)=saln\(i,j,k,n\)*\(1.0+offset\(2\)\)) N
+(            th3d\(i,j,k,n\)=sig\(temp\(i,j,k,n\),saln\(i,j,k,n\)\)-thbase) N
+(          ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(1\) ) p
+(then) K
+(  ) p
+(!th&S) c n
+(            th3d\(i,j,k,n\)=th3d\(i,j,k,n\)*\(1.0+offset\(1\)\)) p n
+(            saln\(i,j,k,n\)=saln\(i,j,k,n\)*\(1.0+offset\(2\)\)) N
+(            temp\(i,j,k,n\)=tofsig\(th3d\(i,j,k,n\)+thbase,) N
+(     &                           saln\(i,j,k,n\)\)) N
+(          ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(2\) ) p
+(then) K
+(  ) p
+(!th&T) c n
+(            th3d\(i,j,k,n\)=th3d\(i,j,k,n\)*\(1.0+offset\(1\)\)) p n
+(            temp\(i,j,k,n\)=temp\(i,j,k,n\)*\(1.0+offset\(2\)\)) N
+(            saln\(i,j,k,n\)=sofsig\(th3d\(i,j,k,n\)+thbase,) N
+(     &                           temp\(i,j,k,n\)\)) N
+(          ) S
+(endif) K n
+(          ) p
+(do) K
+( ktr= 1,ntracr) p n
+(            tracer\(i,j,k,n,ktr\)=tracer\(i,j,k,n,ktr\)*\(1.0+offset\(ktr+2\)\)) N
+(          ) S
+(enddo) K
+( ) p
+(!ktr) c n
+(          ) p
+(if) K
+( \(mxlmy\) ) p
+(then) K n
+(            q2\( i,j,k,n\)=q2\( i,j,k,n\)*\(1.0+offset\(ntracr+3\)\)) p n
+(            q2l\(i,j,k,n\)=q2l\(i,j,k,n\)*\(1.0+offset\(ntracr+4\)\)) N
+(          ) S
+(endif) K n
+(c) c n
+(          ) p
+(if) K
+(     \(.false.\) ) p
+(then) K
+( ) p
+(!debugging) c n
+(            zthk = dp\(i,j,k,n\)) p n
+(            ) S
+(if) K
+(     \(hybflg) p
+(.eq.) K
+(0\) ) p
+(then) K
+(  ) p
+(!T&S) c n
+(              asum\(1,3\) = asum\(1,3\) + temp\(i,j,k,n\)*zthk) p n
+(              asum\(2,3\) = asum\(2,3\) + saln\(i,j,k,n\)*zthk) N
+(            ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(1\) ) p
+(then) K
+(  ) p
+(!th&S) c n
+(              asum\(1,3\) = asum\(1,3\) + th3d\(i,j,k,n\)*zthk) p n
+(              asum\(2,3\) = asum\(2,3\) + saln\(i,j,k,n\)*zthk) N
+(            ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(2\) ) p
+(then) K
+(  ) p
+(!th&T) c n
+(              asum\(1,3\) = asum\(1,3\) + th3d\(i,j,k,n\)*zthk) p n
+(              asum\(2,3\) = asum\(2,3\) + temp\(i,j,k,n\)*zthk) N
+(            ) S
+(endif) K n
+(            ) p
+(do) K
+( ktr= 1,ntracr) p n
+(              asum\(ktr+2,3\) = asum\(ktr+2,3\) + tracer\(i,j,k,n,ktr\)*zthk) N
+(            ) S
+(enddo) K
+( ) p
+(!ktr) c n
+(            ) p
+(if) K
+( \(mxlmy\) ) p
+(then) K n
+(              asum\(ntracr+3,3\) = asum\(ntracr+3,3\) +  q2\( i,j,k,n\)*zthk) p n
+(              asum\(ntracr+4,3\) = asum\(ntracr+4,3\) +  q2l\(i,j,k,n\)*zthk) N
+(            ) S
+(endif) K n
+(          ) p
+(endif) K
+( ) p
+(!debuging) c n
+(        ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(        ) p
+(if) K
+(     \(.false. ) p
+(.and.) K
+( ) p
+(!debugging) c n
+(     &          i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(          ) p
+(do) K
+( ktr= 1,nums1d) p n
+(            ) S
+(write) K
+(\(lp,') p
+(\(a,1p4e16.8,i3\)) str
+('\)) p n
+(     &        ') S
+(hybgen,sum:) str
+(',) p n
+(     &        asum\(ktr,1\)/p\(i,j,kk+1\),) N
+(hybgen.f) (Page 14/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (14/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (15) 15
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     &        asum\(ktr,2\)/p\(i,j,kk+1\),) p n
+(     &        asum\(ktr,3\)/p\(i,j,kk+1\),) N
+(     &        offset\(ktr\),ktr) N
+(          ) S
+(enddo) K
+( ) p
+(!ktr) c n
+(        ) p
+(endif) K
+( ) p
+(!debugging .and. i.eq.itest .and. j.eq.jtest) c n
+(        ) p
+(if) K
+(     \(.false. ) p
+(.and.) K
+( ) p
+(!debugging) c n
+(     &          j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(          ktr=1) p n
+(*         if     \(abs\(offset\(ktr\)\).gt.1.e-08\) then) c n
+(          ) p
+(if) K
+(     \() p
+(abs) K
+(\(offset\(ktr\)\)) p
+(.gt.) K
+(1.e-12\) ) p
+(then) K n
+(            ) p
+(write) K
+(\(lp,') p
+(\(a,1p4e16.8,i3\)) str
+('\)) p n
+(     &        ') S
+(hybgen,sum:) str
+(',) p n
+(     &        asum\(ktr,1\)/p\(i,j,kk+1\),) N
+(     &        asum\(ktr,2\)/p\(i,j,kk+1\),) N
+(     &        asum\(ktr,3\)/p\(i,j,kk+1\),) N
+(     &        offset\(ktr\),i) N
+(          ) S
+(endif) K
+( ) p
+(!large offset) c n
+(        ) p
+(endif) K
+( ) p
+(!debugging .and. j.eq.jtest) c n
+(      ) p
+(endif) K
+( ) p
+(!lconserve) c n
+(c) N
+(cdiag ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(*       write \(lp,'\(i9,3a/\(i9,3f23.17\)\)'\)) c n
+(*    &  nstep,) N
+(*    &  '                   dens',) N
+(*    &  '                  thkns',) N
+(*    &  '                   dpth',) N
+(*    &  \(k,tthe\(k,1\),    dprs\(k\)*qonem,    pres\(k+1\)*qonem,) N
+(*    &   k,th3d\(i,j,k,n\),dp\(i,j,k,n\)*qonem,p\(i,j,k+1\)*qonem,) N
+(*    &  k=1,kk\)) N
+(cdiag   ) p
+(write) K
+( \(lp,') p
+(\(i9,3a/\(i9,3f23.17\)\)) str
+('\)) p n
+(cdiag&  nstep,) N
+(cdiag&  ') S
+(               tracer.1) str
+(',) p n
+(cdiag&  ') S
+(                  thkns) str
+(',) p n
+(cdiag&  ') S
+(                   dpth) str
+(',) p n
+(cdiag&  \(k,ttrc\(      k,1,1\),  dprs\(k\)*qonem,   pres\(k+1\)*qonem,) N
+(cdiag&   k,tracer\(i,j,k,n,1\),dp\(i,j,k,n\)*qonem,p\(i,j,k+1\)*qonem,) N
+(cdiag&  k=1,kk\)) N
+(cdiag   ) S
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag ) S
+(endif) K n
+(c) c n
+(cdiag 103  ) p
+(format) K
+( \(i9,2i5,a/\(33x,i3,2f8.3,f8.3,f9.3,f9.2\)\)) p n
+(cdiag      ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag       ) p
+(if) K
+(     \(hybflg) p
+(.eq.) K
+(0\) ) p
+(then) K
+(  ) p
+(!T&S) c n
+(cdiag        ) p
+(write) K
+( \(lp,103\) nstep,itest+i0,jtest+j0,) p n
+(cdiag     &  ') S
+(    hybgen, do 22:  temp    saln    dens     thkns     dpth) str
+(',) p n
+(cdiag     &  \(k,s1d\(k,1\),s1d\(k,2\),0.0,) N
+(cdiag     &   \(pres\(k+1\)-pres\(k\)\)*qonem,pres\(k+1\)*qonem,) N
+(cdiag     &   k,temp\(i,j,k,n\),saln\(i,j,k,n\),) N
+(cdiag     &   th3d\(i,j,k,n\)+thbase,dp\(i,j,k,n\)*qonem,) N
+(cdiag     &   p\(i,j,k+1\)*qonem,) N
+(cdiag     &  k=1,kk\)) N
+(cdiag       ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(1\) ) p
+(then) K
+(  ) p
+(!th&S) c n
+(cdiag        ) p
+(write) K
+( \(lp,103\) nstep,itest+i0,jtest+j0,) p n
+(cdiag     &  ') S
+(    hybgen, do 22:  temp    saln    dens     thkns     dpth) str
+(',) p n
+(cdiag     &  \(k,0.0,s1d\(k,2\),s1d\(k,1\)+thbase,) N
+(cdiag     &   \(pres\(k+1\)-pres\(k\)\)*qonem,pres\(k+1\)*qonem,) N
+(cdiag     &   k,temp\(i,j,k,n\),saln\(i,j,k,n\),) N
+(cdiag     &   th3d\(i,j,k,n\)+thbase,dp\(i,j,k,n\)*qonem,) N
+(cdiag     &   p\(i,j,k+1\)*qonem,) N
+(hybgen.f) (Page 15/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (15/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (16) 16
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(cdiag     &  k=1,kk\)) p n
+(cdiag       ) S
+(elseif) K
+( \(hybflg) p
+(.eq.) K
+(2\) ) p
+(then) K
+(  ) p
+(!th&T) c n
+(cdiag        ) p
+(write) K
+( \(lp,103\) nstep,itest+i0,jtest+j0,) p n
+(cdiag     &  ') S
+(    hybgen, do 22:  temp    saln    dens     thkns     dpth) str
+(',) p n
+(cdiag     &  \(k,s1d\(k,2\),0.0,s1d\(k,1\)+thbase,) N
+(cdiag     &   \(pres\(k+1\)-pres\(k\)\)*qonem,pres\(k+1\)*qonem,) N
+(cdiag     &   k,temp\(i,j,k,n\),saln\(i,j,k,n\),) N
+(cdiag     &   th3d\(i,j,k,n\)+thbase,dp\(i,j,k,n\)*qonem,) N
+(cdiag     &   p\(i,j,k+1\)*qonem,) N
+(cdiag     &  k=1,kk\)) N
+(cdiag       ) S
+(endif) K n
+(cdiag       ) p
+(call) K
+( ) p
+(flush) l
+(\(lp\)) p n
+(cdiag      ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(      ) p
+(enddo) K
+( ) p
+(!i) c n
+(      ) p
+(enddo) K
+( ) p
+(!l) c n
+(c) N
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgenaj) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgenbj) L
+(\(m,n, j\)) p n
+(      ) S
+(use) K
+( ) p
+(mod_xc) l
+(  ) p
+(! HYCOM communication interface) c n
+(      ) p
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(include) K
+( ') p
+(common_blocks.h) str
+(') p n
+(c) c n
+(      ) p
+(integer) K
+( m,n, j) p n
+(c) c n
+(c --- --------------------------------------------) N
+(c --- hybrid grid generator, single j-row \(part B\).) N
+(c --- --------------------------------------------) N
+(c) N
+(      ) p
+(integer) K
+( i,k,l) p n
+(      ) S
+(logical) K
+( lcm\(kdm\)      ) p
+(!use PCM for some layers? \(always .false.\)) c n
+(      ) p
+(real) K
+(    s1d\(kdm\),     ) p
+(!original scalar fields) c n
+(     &        f1d\(kdm\),     ) p
+(!final    scalar fields) c n
+(     &        c1d\(kdm,3\),   ) p
+(!interpolation coefficients) c n
+(     &        dpi\( kdm\),    ) p
+(!original layer thicknesses, >= dpthin) c n
+(     &        dprs\(kdm\),    ) p
+(!original layer thicknesses) c n
+(     &        pres\(kdm+1\),  ) p
+(!original layer interfaces) c n
+(     &        prsf\(kdm+1\)   ) p
+(!final    layer interfaces) c n
+(      ) p
+(real) K
+(    dpthin) p n
+(c) c n
+(c --- vertical momentum flux across moving interfaces \(the s-dot term in the) N
+(c --- momentum equation\) - required to locally conserve momentum when hybgen) N
+(c --- moves vertical coordinates.) N
+(c) N
+(      dpthin = 0.001*onemm) p n
+(c) c n
+(c --- always use high order remapping for velocity) N
+(      ) p
+(do) K
+( k=1,kk) p n
+(        lcm\(k\) = .false.  ) S
+(!use same remapper for all layers) c n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(      ) p
+(do) K
+( l=1,isu\(j\)) p n
+(        ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifu\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilu\(j,l\)\)) p n
+(c) c n
+(c ---     store one-dimensional arrays of -u- and -p- for the 'old' vertical gri) N
+(d) N
+(hybgen.f) (Page 16/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (16/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (17) 17
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(          pres\(1\)=pu\(i,j,1\)) p n
+(          ) S
+(do) K
+( k=1,kk) p n
+(            s1d\(k\)   =u\(i,j,k,n\)) N
+(            pres\(k+1\)=pu\(i,j,k+1\)) N
+(            dprs\(k\)  =pres\(k+1\)-pres\(k\)) N
+(            dpi\( k\)  =) S
+(max) K
+(\(dprs\(k\),dpthin\)) p n
+(          ) S
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(c ---     remap -u- profiles from the 'old' vertical grid onto the) N
+(c ---     'new' vertical grid.) N
+(c) N
+(          prsf\(1\) = pu\(i,j,1\)) p n
+(          ) S
+(do) K
+( k=1,kk) p n
+(            pu\(i,j,k+1\) = pu\(i,j,k\) + dpu\(i,j,k,n\)  ) S
+(!new vertical grid) c n
+(            prsf\(k+1\)   = pu\(i,j,k+1\)) p n
+(          ) S
+(enddo) K n
+(          ) p
+(if) K
+(     \(hybmap) p
+(.eq.) K
+(0\) ) p
+(then) K
+( ) p
+(!PCM) c n
+(            ) p
+(call) K
+( ) p
+(hybgen_pcm_remap) l
+(\(s1d,pres,dprs,) p n
+(     &                            f1d,prsf,kk,1, dpthin\)) N
+(          ) S
+(elseif) K
+( \(hybmap) p
+(.eq.) K
+(1 ) p
+(.and.) K
+( hybiso) p
+(.gt.) K
+(2.0\) ) p
+(then) K
+( ) p
+(!PLM \(as in 2.1.08\)) c n
+(            ) p
+(call) K
+( ) p
+(hybgen_plm_coefs) l
+(\(s1d,     dprs,lcm,c1d,) p n
+(     &                                     kk,1, dpthin\)) N
+(            ) S
+(call) K
+( ) p
+(hybgen_plm_remap) l
+(\(s1d,pres,dprs,    c1d,) p n
+(     &                            f1d,prsf,kk,1, dpthin\)) N
+(          ) S
+(else) K
+( ) p
+(!PPM \(even if scalar fields are PLM\)) c n
+(            ) p
+(call) K
+( ) p
+(hybgen_ppm_coefs) l
+(\(s1d,     dpi, lcm,c1d,) p n
+(     &                                     kk,1, dpthin\)) N
+(            ) S
+(call) K
+( ) p
+(hybgen_ppm_remap) l
+(\(s1d,pres,dprs,    c1d,) p n
+(     &                            f1d,prsf,kk,1, dpthin\)) N
+(          ) S
+(endif) K
+( ) p
+(!hybmap) c n
+(          ) p
+(do) K
+( k=1,kk) p n
+(            ) S
+(if) K
+(     \(dpi\(k\)) p
+(.gt.) K
+(dpthin ) p
+(.or.) K n
+(     &              prsf\(k\)) p
+(.le.) K
+(prsf\(kk+1\)-onemm\) ) p
+(then) K n
+(              u\(i,j,k,n\) = f1d\(k\)) p n
+(            ) S
+(else) K n
+(* ---         thin near-bottom layer, zero total current) c n
+(              u\(i,j,k,n\) = -ubavg\(i,j,n\)) p n
+(            ) S
+(endif) K n
+(          ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+( 104  ) p
+(format) K
+( \(i9,2i5,a/\(33x,i3,f8.3,f9.3,f9.2\)\)) p n
+(cdiag ) S
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag   ) p
+(write) K
+( \(lp,104\) nstep,itest+i0,jtest+j0,) p n
+(cdiag&  ') S
+(   hybgen, do 412:  u       thkns     dpth) str
+(',) p n
+(cdiag&  \(k,s1d\(k,1\),) N
+(cdiag&   \(pres\(k+1\)-pres\(k\)\)*qonem,pres\(k+1\)*qonem,) N
+(cdiag&   k,u\(i,j,k,n\),) N
+(cdiag&   dpu\(i,j,k,n\)*qonem,pu\(i,j,k+1\)*qonem,) N
+(cdiag&   k=1,kk\)) N
+(cdiag ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(        ) p
+(enddo) K
+( ) p
+(!i) c n
+(      ) p
+(enddo) K
+( ) p
+(!l) c n
+(c) N
+(      ) p
+(do) K
+( l=1,isv\(j\)) p n
+(        ) S
+(do) K
+( i=) p
+(max) K
+(\(1-margin,ifv\(j,l\)\),) p
+(min) K
+(\(ii+margin,ilv\(j,l\)\)) p n
+(c) c n
+(c ---     store one-dimensional arrays of -v- and -p- for the 'old' vertical gri) N
+(d) N
+(hybgen.f) (Page 17/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (17/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (18) 18
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(          pres\(1\)=pv\(i,j,1\)) p n
+(          ) S
+(do) K
+( k=1,kk) p n
+(            s1d\(k\)   =v\(i,j,k,n\)) N
+(            pres\(k+1\)=pv\(i,j,k+1\)) N
+(            dprs\(k\)  =pres\(k+1\)-pres\(k\)) N
+(            dpi\( k\)  =) S
+(max) K
+(\(dprs\(k\),dpthin\)) p n
+(          ) S
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(c ---     remap -v- profiles from the 'old' vertical grid onto the) N
+(c ---     'new' vertical grid.) N
+(c) N
+(          prsf\(1\) = pv\(i,j,1\)) p n
+(          ) S
+(do) K
+( k=1,kk) p n
+(            pv\(i,j,k+1\) = pv\(i,j,k\) + dpv\(i,j,k,n\)  ) S
+(!new vertical grid) c n
+(            prsf\(k+1\)   = pv\(i,j,k+1\)) p n
+(          ) S
+(enddo) K
+( ) p
+(!k) c n
+(          ) p
+(if) K
+(     \(hybmap) p
+(.eq.) K
+(0\) ) p
+(then) K
+( ) p
+(!PCM) c n
+(            ) p
+(call) K
+( ) p
+(hybgen_pcm_remap) l
+(\(s1d,pres,dprs,) p n
+(     &                            f1d,prsf,kk,1, dpthin\)) N
+(          ) S
+(elseif) K
+( \(hybmap) p
+(.eq.) K
+(1 ) p
+(.and.) K
+( hybiso) p
+(.gt.) K
+(2.0\) ) p
+(then) K
+( ) p
+(!PLM \(as in 2.1.08\)) c n
+(            ) p
+(call) K
+( ) p
+(hybgen_plm_coefs) l
+(\(s1d,     dprs,lcm,c1d,) p n
+(     &                                     kk,1, dpthin\)) N
+(            ) S
+(call) K
+( ) p
+(hybgen_plm_remap) l
+(\(s1d,pres,dprs,    c1d,) p n
+(     &                            f1d,prsf,kk,1, dpthin\)) N
+(          ) S
+(else) K
+( ) p
+(!PPM \(even if scalar fields are PLM\)) c n
+(            ) p
+(call) K
+( ) p
+(hybgen_ppm_coefs) l
+(\(s1d,     dpi, lcm,c1d,) p n
+(     &                                     kk,1, dpthin\)) N
+(            ) S
+(call) K
+( ) p
+(hybgen_ppm_remap) l
+(\(s1d,pres,dprs,    c1d,) p n
+(     &                            f1d,prsf,kk,1, dpthin\)) N
+(          ) S
+(endif) K
+( ) p
+(!hybmap) c n
+(          ) p
+(do) K
+( k=1,kk) p n
+(            ) S
+(if) K
+(     \(dpi\(k\)) p
+(.gt.) K
+(dpthin ) p
+(.or.) K n
+(     &              prsf\(k\)) p
+(.le.) K
+(prsf\(kk+1\)-onemm\) ) p
+(then) K n
+(              v\(i,j,k,n\) = f1d\(k\)) p n
+(            ) S
+(else) K n
+(* ---         thin near-bottom layer, zero total current) c n
+(              v\(i,j,k,n\) = -vbavg\(i,j,n\)) p n
+(            ) S
+(endif) K n
+(          ) p
+(enddo) K
+( ) p
+(!k) c n
+(c) N
+(cdiag ) p
+(if) K
+( \(i) p
+(.eq.) K
+(itest ) p
+(.and.) K
+( j) p
+(.eq.) K
+(jtest\) ) p
+(then) K n
+(cdiag   ) p
+(write) K
+( \(lp,104\) nstep,itest+i0,jtest+j0,) p n
+(cdiag&  ') S
+(   hybgen, do 512:  v       thkns     dpth) str
+(',) p n
+(cdiag&  \(k,s1d\(k,1\),) N
+(cdiag&   \(pres\(k+1\)-pres\(k\)\)*qonem,pres\(k+1\)*qonem,) N
+(cdiag&   k,v\(i,j,k,n\),) N
+(cdiag&   dpv\(i,j,k,n\)*qonem,pv\(i,j,k+1\)*qonem,) N
+(cdiag&   k=1,kk\)) N
+(cdiag ) S
+(endif) K
+( ) p
+(!debug) c n
+(c) N
+(        ) p
+(enddo) K
+( ) p
+(!i) c n
+(      ) p
+(enddo) K
+( ) p
+(!l) c n
+(c) N
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgenbj) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgen_pcm_remap) L
+(\(si,pi,dpi,) p n
+(     &                            so,po,kk,ks,thin\)) N
+(      ) S
+(implicit) K
+( ) p
+(none) K n
+(hybgen.f) (Page 18/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (18/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (19) 19
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c) c n
+(      ) p
+(integer) K
+( kk,ks) p n
+(      ) S
+(real) K
+(    si\(kk,ks\),pi\(kk+1\),dpi\(kk\),) p n
+(     &        so\(kk,ks\),po\(kk+1\),thin) N
+(c) c n
+(c-----------------------------------------------------------------------) p n
+(c  1\) remap from one set of vertical cells to another.) c n
+(c     method: piecewise constant across each input cell) N
+(c             the output is the average of the interpolation) N
+(c             profile across each output cell.) N
+(c) N
+(c  2\) input arguments:) N
+(c       si    - initial scalar fields in pi-layer space) N
+(c       pi    - initial layer interface depths \(non-negative\)) N
+(c                  pi\(   1\) is the surface) N
+(c                  pi\(kk+1\) is the bathymetry) N
+(c                  pi\(k+1\) >= pi\(k\)) N
+(c       dpi   - initial layer thicknesses \(dpi\(k\)=pi\(k+1\)-pi\(k\)\)) N
+(c       kk    - number of layers) N
+(c       ks    - number of fields) N
+(c       po    - target interface depths \(non-negative\)) N
+(c                  po\(   1\) is the surface) N
+(c                  po\(kk+1\) is the bathymetry \(== pi\(kk+1\)\)) N
+(c                  po\(k+1\) >= po\(k\)) N
+(c       thin  - layer thickness \(>0\) that can be ignored) N
+(c) N
+(c  3\) output arguments:) N
+(c       so    - scalar fields in po-layer space) N
+(c) N
+(c  4\) Tim Campbell, Mississippi State University, October 2002.) N
+(c     Alan J. Wallcraft,  Naval Research Laboratory,  Aug. 2007.) N
+(c-----------------------------------------------------------------------) p n
+(c) c n
+(      ) p
+(integer) K
+( i,k,l,lb,lt) p n
+(      ) S
+(real) K
+(    xb,xt,zb,zt,zx,o) p n
+(      ) S
+(real) K
+(*8  sz) p n
+(c) c n
+(      zx=pi\(kk+1\) ) p
+(!maximum depth) c n
+(      zb=) p
+(max) K
+(\(po\(1\),pi\(1\)\)) p n
+(      lb=1) N
+(      ) S
+(do) K
+( ) p
+(while) K
+( \(pi\(lb+1\)) p
+(.lt.) K
+(zb ) p
+(.and.) K
+( lb) p
+(.lt.) K
+(kk\)) p n
+(        lb=lb+1) N
+(      ) S
+(enddo) K n
+(      ) p
+(do) K
+( k= 1,kk) p n
+(        zt = zb) N
+(        zb = ) S
+(min) K
+(\(po\(k+1\),zx\)) p n
+(*       write\(lp,*\) 'k,zt,zb = ',k,zt,zb) c n
+(        lt=lb ) p
+(!top will always correspond to bottom of previous) c n
+(              ) p
+(!find input layer containing bottom output interface) c n
+(        ) p
+(do) K
+( ) p
+(while) K
+( \(pi\(lb+1\)) p
+(.lt.) K
+(zb ) p
+(.and.) K
+( lb) p
+(.lt.) K
+(kk\)) p n
+(          lb=lb+1) N
+(        ) S
+(enddo) K n
+(        ) p
+(if) K
+(     \(zb-zt) p
+(.le.) K
+(thin ) p
+(.or.) K
+( zt) p
+(.ge.) K
+(zx\) ) p
+(then) K n
+(          ) p
+(if) K
+(     \(k) p
+(.ne.) K
+(1\) ) p
+(then) K n
+(c) c n
+(c ---       thin or bottomed layer, values taken from layer above) N
+(c) N
+(            ) p
+(do) K
+( i= 1,ks) p n
+(              so\(k,i\) = so\(k-1,i\)) N
+(hybgen.f) (Page 19/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (19/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (20) 20
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(            ) p
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(else) K
+( ) p
+(!thin surface layer) c n
+(            ) p
+(do) K
+( i= 1,ks) p n
+(              so\(k,i\) = si\(k,i\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(endif) K n
+(        ) p
+(else) K n
+(c) c n
+(c         form layer averages.) N
+(c         use PPM-like logic \(may not have minimum operation count\)) N
+(c) N
+(*         if     \(pi\(lb\).gt.zt\) then) N
+(*           write\(lp,*\) 'bad lb = ',lb) N
+(*           stop) N
+(*         endif) N
+(          xt=\(zt-pi\(lt\)\)/) p
+(max) K
+(\(dpi\(lt\),thin\)) p n
+(          xb=\(zb-pi\(lb\)\)/) S
+(max) K
+(\(dpi\(lb\),thin\)) p n
+(          ) S
+(do) K
+( i= 1,ks) p n
+(            o = si\(\(lt+lb\)/2,i\)  ) S
+(!offset to reduce round-off) c n
+(            ) p
+(if) K
+(     \(lt) p
+(.ne.) K
+(lb\) ) p
+(then) K n
+(              sz=   dpi\(lt\)*\(si\(lt,i\)-o\)*\(1.-xt\)) p n
+(              ) S
+(do) K
+( l=lt+1,lb-1) p n
+(                sz=sz+dpi\(l\)*\(si\(l,i\)-o\)) N
+(              ) S
+(enddo) K
+( ) p
+(!l) c n
+(              sz=sz+dpi\(lb\)*\(si\(lb,i\)-o\)*    xb) p n
+(            ) S
+(else) K n
+(              sz=   dpi\(lt\)*\(si\(lt,i\)-o\)*\(xb-xt\)) p n
+(            ) S
+(endif) K n
+(            so\(k,i\) = o + sz/\(zb-zt\)  ) p
+(!zb-zt>=thin) c n
+(          ) p
+(enddo) K
+( ) p
+(!i) c n
+(        ) p
+(endif) K
+( ) p
+(!thin:std layer) c n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgen_pcm_remap) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgen_plm_coefs) L
+(\(si,dpi,lc,ci,kk,ks,thin\)) p n
+(      ) S
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(integer) K
+( kk,ks) p n
+(      ) S
+(logical) K
+( lc\(kk\)) p n
+(      ) S
+(real) K
+(    si\(kk,ks\),dpi\(kk\),ci\(kk,ks\),thin) p n
+(c) c n
+(c-----------------------------------------------------------------------) p n
+(c  1\) coefficents for remaping from one set of vertical cells to another.) c n
+(c     method: piecewise linear across each input cell with) N
+(c             monotonized central-difference limiter.) N
+(c             the output is the average of the interpolation) N
+(c             profile across each output cell.) N
+(c) N
+(c  2\) input arguments:) N
+(c       si    - initial scalar fields in pi-layer space) N
+(c       dpi   - initial layer thicknesses \(dpi\(k\)=pi\(k+1\)-pi\(k\)\)) N
+(c       lc    - use PCM for selected layers) N
+(c       kk    - number of layers) N
+(c       ks    - number of fields) N
+(c       thin  - layer thickness \(>0\) that can be ignored) N
+(c) N
+(c  3\) output arguments:) N
+(c       ci    - coefficents \(slopes\) for hybgen_plm_remap) N
+(hybgen.f) (Page 20/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (20/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (21) 21
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c                profile\(y\)=si+ci*\(y-1\),  0<=y<=1) c n
+(c) N
+(c  4\) Tim Campbell, Mississippi State University, October 2002.) N
+(c     Alan J. Wallcraft,  Naval Research Laboratory,  Aug. 2007.) N
+(c-----------------------------------------------------------------------) p n
+(c) c n
+(      ) p
+(integer) K
+( k,i) p n
+(      ) S
+(real) K
+(    qcen,zbot,zcen,ztop) p n
+(c) c n
+(      ) p
+(do) K
+( i= 1,ks) p n
+(        ci\(1, i\) = 0.0) N
+(        ci\(kk,i\) = 0.0) N
+(      ) S
+(enddo) K
+( ) p
+(!i) c n
+(      ) p
+(do) K
+( k= 2,kk-1) p n
+(        ) S
+(if) K
+(     \(lc\(k\) ) p
+(.or.) K
+( dpi\(k\)) p
+(.le.) K
+(thin\) ) p
+(then) K
+(  ) p
+(!use PCM) c n
+(          ) p
+(do) K
+( i= 1,ks) p n
+(            ci\(k,i\) = 0.0) N
+(          ) S
+(enddo) K
+( ) p
+(!i) c n
+(        ) p
+(else) K n
+(c ---     use qcen in place of 0.5 to allow for non-uniform grid) c n
+(          qcen = dpi\(k\)/\(dpi\(k\)+0.5*\(dpi\(k-1\)+dpi\(k+1\)\)\)  ) p
+(!dpi\(k\)>thin) c n
+(          ) p
+(do) K
+( i= 1,ks) p n
+(c ---       PLM \(non-zero slope, but no new extrema\)) c n
+(c ---       layer value is si-0.5*ci at top    interface,) N
+(c ---                  and si+0.5*ci at bottom interface.) N
+(c) N
+(c ---       monotonized central-difference limiter \(van Leer, 1977,) N
+(c ---       JCP 23 pp 276-299\).  For a discussion of PLM limiters, see) N
+(c ---       Finite Volume Methods for Hyperbolic Problems by R.J. Leveque.) N
+(            ztop = 2.0*\(si\(k,  i\)-si\(k-1,i\)\)) p n
+(            zbot = 2.0*\(si\(k+1,i\)-si\(k,  i\)\)) N
+(            zcen =qcen*\(si\(k+1,i\)-si\(k-1,i\)\)) N
+(            ) S
+(if) K
+(     \(ztop*zbot) p
+(.gt.) K
+(0.0\) ) p
+(then) K
+( ) p
+(!ztop,zbot are the same sign) c n
+(              ci\(k,i\)=) p
+(sign) K
+(\() p
+(min) K
+(\() p
+(abs) K
+(\(zcen\),) p
+(abs) K
+(\(zbot\),) p
+(abs) K
+(\(ztop\)\),zbot\)) p n
+(            ) S
+(else) K n
+(              ci\(k,i\)=0.0  ) p
+(!local extrema, so no slope) c n
+(            ) p
+(endif) K n
+(          ) p
+(enddo) K
+( ) p
+(!i) c n
+(        ) p
+(endif) K
+(  ) p
+(!PCM:PLM) c n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgen_plm_coefs) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgen_plm_remap) L
+(\(si,pi,dpi,ci,) p n
+(     &                            so,po,kk,ks,thin\)) N
+(      ) S
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(integer) K
+( kk,ks) p n
+(      ) S
+(real) K
+(    si\(kk,ks\),pi\(kk+1\),dpi\(kk\),ci\(kk,ks\),) p n
+(     &        so\(kk,ks\),po\(kk+1\),thin) N
+(c) c n
+(c-----------------------------------------------------------------------) p n
+(c  1\) remap from one set of vertical cells to another.) c n
+(c     method: piecewise linear across each input cell) N
+(c             the output is the average of the interpolation) N
+(c             profile across each output cell.) N
+(c) N
+(c  2\) input arguments:) N
+(c       si    - initial scalar fields in pi-layer space) N
+(hybgen.f) (Page 21/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (21/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (22) 22
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c       pi    - initial layer interface depths \(non-negative\)) c n
+(c                  pi\(   1\) is the surface) N
+(c                  pi\(kk+1\) is the bathymetry) N
+(c                  pi\(k+1\) >= pi\(k\)) N
+(c       dpi   - initial layer thicknesses \(dpi\(k\)=pi\(k+1\)-pi\(k\)\)) N
+(c       ci    - coefficents \(slopes\) from hybgen_plm_coefs) N
+(c                profile\(y\)=si+ci*\(y-1\),  0<=y<=1) N
+(c       kk    - number of layers) N
+(c       ks    - number of fields) N
+(c       po    - target interface depths \(non-negative\)) N
+(c                  po\(   1\) is the surface) N
+(c                  po\(kk+1\) is the bathymetry \(== pi\(kk+1\)\)) N
+(c                  po\(k+1\) >= po\(k\)) N
+(c       thin  - layer thickness \(>0\) that can be ignored) N
+(c) N
+(c  3\) output arguments:) N
+(c       so    - scalar fields in po-layer space) N
+(c) N
+(c  4\) Tim Campbell, Mississippi State University, October 2002.) N
+(c     Alan J. Wallcraft,  Naval Research Laboratory,  Aug. 2007.) N
+(c-----------------------------------------------------------------------) p n
+(c) c n
+(      ) p
+(integer) K
+( i,k,l,lb,lt) p n
+(      ) S
+(real) K
+(    c0,xb,xt,zb,zt,zx,o) p n
+(      ) S
+(real) K
+(*8  sz) p n
+(c) c n
+(      zx=pi\(kk+1\) ) p
+(!maximum depth) c n
+(      zb=) p
+(max) K
+(\(po\(1\),pi\(1\)\)) p n
+(      lb=1) N
+(      ) S
+(do) K
+( ) p
+(while) K
+( \(pi\(lb+1\)) p
+(.lt.) K
+(zb ) p
+(.and.) K
+( lb) p
+(.lt.) K
+(kk\)) p n
+(        lb=lb+1) N
+(      ) S
+(enddo) K n
+(      ) p
+(do) K
+( k= 1,kk) p n
+(        zt = zb) N
+(        zb = ) S
+(min) K
+(\(po\(k+1\),zx\)) p n
+(*       write\(lp,*\) 'k,zt,zb = ',k,zt,zb) c n
+(        lt=lb ) p
+(!top will always correspond to bottom of previous) c n
+(              ) p
+(!find input layer containing bottom output interface) c n
+(        ) p
+(do) K
+( ) p
+(while) K
+( \(pi\(lb+1\)) p
+(.lt.) K
+(zb ) p
+(.and.) K
+( lb) p
+(.lt.) K
+(kk\)) p n
+(          lb=lb+1) N
+(        ) S
+(enddo) K n
+(        ) p
+(if) K
+(     \(zb-zt) p
+(.le.) K
+(thin ) p
+(.or.) K
+( zt) p
+(.ge.) K
+(zx\) ) p
+(then) K n
+(          ) p
+(if) K
+(     \(k) p
+(.ne.) K
+(1\) ) p
+(then) K n
+(c) c n
+(c ---       thin or bottomed layer, values taken from layer above) N
+(c) N
+(            ) p
+(do) K
+( i= 1,ks) p n
+(              so\(k,i\) = so\(k-1,i\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(else) K
+( ) p
+(!thin surface layer) c n
+(            ) p
+(do) K
+( i= 1,ks) p n
+(              so\(k,i\) = si\(k,i\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(endif) K n
+(        ) p
+(else) K n
+(c) c n
+(c         form layer averages.) N
+(c         use PPM-like logic \(may not have minimum operation count\)) N
+(c) N
+(hybgen.f) (Page 22/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (22/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (23) 23
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(*         if     \(pi\(lb\).gt.zt\) then) c n
+(*           write\(lp,*\) 'bad lb = ',lb) N
+(*           stop) N
+(*         endif) N
+(          xt=\(zt-pi\(lt\)\)/) p
+(max) K
+(\(dpi\(lt\),thin\)) p n
+(          xb=\(zb-pi\(lb\)\)/) S
+(max) K
+(\(dpi\(lb\),thin\)) p n
+(          ) S
+(do) K
+( i= 1,ks) p n
+(            o = si\(\(lt+lb\)/2,i\)  ) S
+(!offset to reduce round-off) c n
+(            ) p
+(if) K
+(     \(lt) p
+(.ne.) K
+(lb\) ) p
+(then) K n
+(              c0=si\(lt,i\) - 0.5*ci\(lt,i\)) p n
+(              sz=   dpi\(lt\)*\(    \(c0  - o\)*\(1.-xt\)) N
+(     &                       +0.5*ci\(lt,i\)*\(1.-xt**2\)\)) N
+(              ) S
+(do) K
+( l=lt+1,lb-1) p n
+(                sz=sz+dpi\(l\)*\(si\(l,i\) - o\)) N
+(              ) S
+(enddo) K
+( ) p
+(!l) c n
+(              c0=si\(lb,i\) - 0.5*ci\(lb,i\)) p n
+(              sz=sz+dpi\(lb\)*\(    \(c0  - o\)*    xb) N
+(     &                       +0.5*ci\(lb,i\)*    xb**2 \)) N
+(            ) S
+(else) K n
+(              c0=si\(lt,i\) - 0.5*ci\(lt,i\)) p n
+(              sz=dpi\(lt\)*\(    \(c0  - o\)*\(xb-xt\)) N
+(     &                    +0.5*ci\(lt,i\)*\(xb**2-xt**2\)\)) N
+(            ) S
+(endif) K n
+(            so\(k,i\) = o + sz/\(zb-zt\)  ) p
+(!zb-zt>=thin) c n
+(          ) p
+(enddo) K
+( ) p
+(!i) c n
+(        ) p
+(endif) K
+( ) p
+(!thin:std layer) c n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgen_plm_remap) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgen_ppm_coefs) L
+(\(s,dp,lc,ci,kk,ks,thin\)) p n
+(      ) S
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(integer) K
+( kk,ks) p n
+(      ) S
+(logical) K
+( lc\(kk\)) p n
+(      ) S
+(real) K
+(    s\(kk,ks\),dp\(kk\),ci\(kk,ks,3\),thin) p n
+(c) c n
+(c-----------------------------------------------------------------------) p n
+(c  1\) coefficents for remaping from one set of vertical cells to another.) c n
+(c     method: monotonic piecewise parabolic across each input cell) N
+(c             the output is the average of the interpolation) N
+(c             profile across each output cell.) N
+(c) N
+(c     Colella, P. & P.R. Woodward, 1984, J. Comp. Phys., 54, 174-201.) N
+(c) N
+(c  2\) input arguments:) N
+(c       s     - initial scalar fields in pi-layer space) N
+(c       dp    - initial layer thicknesses \(>=thin\)) N
+(c       lc    - use PCM for selected layers) N
+(c       kk    - number of layers) N
+(c       ks    - number of fields) N
+(c       thin  - layer thickness \(>0\) that can be ignored) N
+(c) N
+(c  3\) output arguments:) N
+(c       ci    - coefficents for hybgen_ppm_remap) N
+(c                profile\(y\)=ci.1+ci.2*y+ci.3*y^2, 0<=y<=1) N
+(c) N
+(c  4\) Tim Campbell, Mississippi State University, October 2002.) N
+(c     Alan J. Wallcraft,  Naval Research Laboratory,  Aug. 2007.) N
+(hybgen.f) (Page 23/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (23/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (24) 24
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c-----------------------------------------------------------------------) p n
+(c) c n
+(      ) p
+(integer) K
+( j,i) p n
+(      ) S
+(real) K
+(    da,a6,slj,scj,srj) p n
+(      ) S
+(real) K
+(    as\(kk\),al\(kk\),ar\(kk\)) p n
+(      ) S
+(real) K
+(     dpjp\(kk\), dp2jp\(kk\), dpj2p\(kk\),) p n
+(     &        qdpjp\(kk\),qdp2jp\(kk\),qdpj2p\(kk\),dpq3\(kk\),qdp4\(kk\)) N
+(c) c n
+(      ) p
+(!compute grid metrics) c n
+(      ) p
+(do) K
+( j=1,kk-1) p n
+(         dpjp\( j\) = dp\(j\)   + dp\(j+1\)) N
+(         dp2jp\(j\) = dp\(j\)   + dpjp\(j\)) N
+(         dpj2p\(j\) = dpjp\(j\) + dp\(j+1\)) N
+(        qdpjp\( j\) = 1.0/dpjp\( j\)) N
+(        qdp2jp\(j\) = 1.0/dp2jp\(j\)) N
+(        qdpj2p\(j\) = 1.0/dpj2p\(j\)) N
+(      ) S
+(enddo) K
+( ) p
+(!j) c n
+(         dpq3\(2\) = dp\(2\)/\(dp\(1\)+dpjp\(2\)\)) p n
+(      ) S
+(do) K
+( j=3,kk-1) p n
+(         dpq3\(j\) = dp\(j\)/\(dp\(j-1\)+dpjp\(j\)\) ) S
+(!dp\(j\)/      \(dp\(j-1\)+dp\(j\)+dp\(j+1\)\)) c n
+(         qdp4\(j\) = 1.0/\(dpjp\(j-2\)+dpjp\(j\)\) ) p
+(!1.0/\(dp\(j-2\)+dp\(j-1\)+dp\(j\)+dp\(j+1\)\)) c n
+(      ) p
+(enddo) K
+( ) p
+(!j) c n
+(c) N
+(      ) p
+(do) K
+( i= 1,ks) p n
+(        ) S
+(!Compute average slopes: Colella, Eq. \(1.8\)) c n
+(        as\(1\)=0.) p n
+(        ) S
+(do) K
+( j=2,kk-1) p n
+(          ) S
+(if) K
+(     \(lc\(j\) ) p
+(.or.) K
+( dp\(j\)) p
+(.le.) K
+(thin\) ) p
+(then) K
+(  ) p
+(!use PCM) c n
+(            as\(j\) = 0.0) p n
+(          ) S
+(else) K n
+(            slj=s\(j,  i\)-s\(j-1,i\)) p n
+(            srj=s\(j+1,i\)-s\(j,  i\)) N
+(            ) S
+(if) K
+( \(slj*srj) p
+(.gt.) K
+(0.\) ) p
+(then) K n
+(              scj=dpq3\(j\)*\( dp2jp\(j-1\)*srj*qdpjp\(j\)) p n
+(     &                     +dpj2p\(j\)  *slj*qdpjp\(j-1\) \)) N
+(              as\(j\)=) S
+(sign) K
+(\() p
+(min) K
+(\() p
+(abs) K
+(\(2.0*slj\),) p
+(abs) K
+(\(scj\),) p
+(abs) K
+(\(2.0*srj\)\),scj\)) p n
+(            ) S
+(else) K n
+(              as\(j\)=0.) p n
+(            ) S
+(endif) K n
+(          ) p
+(endif) K
+(  ) p
+(!PCM:PPM) c n
+(        ) p
+(enddo) K
+( ) p
+(!j) c n
+(        as\(kk\)=0.) p n
+(        ) S
+(!Compute "first guess" edge values: Colella, Eq. \(1.6\)) c n
+(        al\(1\)=s\(1,i\)  ) p
+(!1st layer PCM) c n
+(        ar\(1\)=s\(1,i\)  ) p
+(!1st layer PCM) c n
+(        al\(2\)=s\(1,i\)  ) p
+(!1st layer PCM) c n
+(        ) p
+(do) K
+( j=3,kk-1) p n
+(          al\(j\)=s\(j-1,i\)+dp\(j-1\)*\(s\(j,i\)-s\(j-1,i\)\)*qdpjp\(j-1\)) N
+(     &         +qdp4\(j\)*\() N
+(     &            2.*dp\(j\)*dp\(j-1\)*qdpjp\(j-1\)*\(s\(j,i\)-s\(j-1,i\)\)*) N
+(     &            \( dpjp\(j-2\)*qdp2jp\(j-1\)) N
+(     &             -dpjp\(j\)  *qdpj2p\(j-1\) \)) N
+(     &            -dp\(j-1\)*as\(j\)  *dpjp\(j-2\)*qdp2jp\(j-1\)) N
+(     &            +dp\(j\)  *as\(j-1\)*dpjp\(j\)  *qdpj2p\(j-1\)) N
+(     &              \)) N
+(          ar\(j-1\)=al\(j\)) N
+(        ) S
+(enddo) K
+( ) p
+(!j) c n
+(        ar\(kk-1\)=s\(kk,i\)  ) p
+(!last layer PCM) c n
+(        al\(kk\)  =s\(kk,i\)  ) p
+(!last layer PCM) c n
+(hybgen.f) (Page 24/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (24/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (25) 25
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        ar\(kk\)  =s\(kk,i\)  ) p
+(!last layer PCM) c n
+(        ) p
+(!Impose monotonicity: Colella, Eq. \(1.10\)) c n
+(        ) p
+(do) K
+( j=2,kk-1) p n
+(          ) S
+(if) K
+( \(\(s\(j+1,i\)-s\(j,i\)\)*\(s\(j,i\)-s\(j-1,i\)\)) p
+(.le.) K
+(0.\) ) p
+(then) K
+( ) p
+(!local extremum) c n
+(            al\(j\)=s\(j,i\)) p n
+(            ar\(j\)=s\(j,i\)) N
+(          ) S
+(else) K n
+(            da=ar\(j\)-al\(j\)) p n
+(            a6=6.0*s\(j,i\)-3.0*\(al\(j\)+ar\(j\)\)) N
+(            ) S
+(if) K
+(     \(da*a6 ) p
+(.gt.) K
+(  da*da\) ) p
+(then) K
+( ) p
+(!peak in right half of zone) c n
+(              al\(j\)=3.0*s\(j,i\)-2.0*ar\(j\)) p n
+(            ) S
+(elseif) K
+( \(da*a6 ) p
+(.lt.) K
+( -da*da\) ) p
+(then) K
+( ) p
+(!peak in left half of zone) c n
+(              ar\(j\)=3.0*s\(j,i\)-2.0*al\(j\)) p n
+(            ) S
+(endif) K n
+(          ) p
+(endif) K n
+(        ) p
+(enddo) K
+( ) p
+(!j) c n
+(        ) p
+(!Set coefficients) c n
+(        ) p
+(do) K
+( j=1,kk) p n
+(          ci\(j,i,1\)=al\(j\)) N
+(          ci\(j,i,2\)=ar\(j\)-al\(j\)) N
+(          ci\(j,i,3\)=6.0*s\(j,i\)-3.0*\(al\(j\)+ar\(j\)\)) N
+(        ) S
+(enddo) K
+( ) p
+(!j) c n
+(      ) p
+(enddo) K
+( ) p
+(!i) c n
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgen_ppm_coefs) L n
+() p n
+(      ) S
+(subroutine) K
+( ) p
+(hybgen_ppm_remap) L
+(\(si,pi,dpi,ci,) p n
+(     &                            so,po,kk,ks,thin\)) N
+(      ) S
+(implicit) K
+( ) p
+(none) K n
+(c) c n
+(      ) p
+(integer) K
+( kk,ks) p n
+(      ) S
+(real) K
+(    si\(kk,ks\),pi\(kk+1\),dpi\(kk\),ci\(kk,ks,3\),) p n
+(     &        so\(kk,ks\),po\(kk+1\),thin) N
+(c) c n
+(c-----------------------------------------------------------------------) p n
+(c  1\) remap from one set of vertical cells to another.) c n
+(c     method: monotonic piecewise parabolic across each input cell) N
+(c             the output is the average of the interpolation) N
+(c             profile across each output cell.) N
+(c     Colella, P. & P.R. Woodward, 1984, J. Comp. Phys., 54, 174-201.) N
+(c) N
+(c  2\) input arguments:) N
+(c       si    - initial scalar fields in pi-layer space) N
+(c       pi    - initial layer interface depths \(non-negative\)) N
+(c                  pi\(   1\) is the surface) N
+(c                  pi\(kk+1\) is the bathymetry) N
+(c                  pi\(k+1\) >= pi\(k\)) N
+(c       dpi   - initial layer thicknesses \(dpi\(k\)=pi\(k+1\)-pi\(k\)\)) N
+(c       ci    - coefficents from hybgen_ppm_coefs) N
+(c                profile\(y\)=ci.1+ci.2*y+ci.3*y^2, 0<=y<=1) N
+(c       kk    - number of layers) N
+(c       ks    - number of fields) N
+(c       po    - target interface depths \(non-negative\)) N
+(c                  po\(   1\) is the surface) N
+(c                  po\(kk+1\) is the bathymetry \(== pi\(kk+1\)\)) N
+(c                  po\(k+1\) >= po\(k\)) N
+(c       thin  - layer thickness \(>0\) that can be ignored) N
+(c) N
+(c  3\) output arguments:) N
+(hybgen.f) (Page 25/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (25/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (26) 26
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c       so    - scalar fields in po-layer space) c n
+(c) N
+(c  4\) Tim Campbell, Mississippi State University, October 2002.) N
+(c     Alan J. Wallcraft,  Naval Research Laboratory,  Aug. 2007.) N
+(c-----------------------------------------------------------------------) p n
+(c) c n
+(      ) p
+(integer) K
+( i,k,l,lb,lt) p n
+(      ) S
+(real) K
+(    xb,xt,zb,zt,zx,o) p n
+(      ) S
+(real) K
+(*8  sz) p n
+(c) c n
+(      zx=pi\(kk+1\) ) p
+(!maximum depth) c n
+(      zb=) p
+(max) K
+(\(po\(1\),pi\(1\)\)) p n
+(      lb=1) N
+(      ) S
+(do) K
+( ) p
+(while) K
+( \(pi\(lb+1\)) p
+(.lt.) K
+(zb ) p
+(.and.) K
+( lb) p
+(.lt.) K
+(kk\)) p n
+(        lb=lb+1) N
+(      ) S
+(enddo) K n
+(      ) p
+(do) K
+( k= 1,kk) p n
+(        zt = zb) N
+(        zb = ) S
+(min) K
+(\(po\(k+1\),zx\)) p n
+(*       write\(lp,*\) 'k,zt,zb = ',k,zt,zb) c n
+(        lt=lb ) p
+(!top will always correspond to bottom of previous) c n
+(              ) p
+(!find input layer containing bottom output interface) c n
+(        ) p
+(do) K
+( ) p
+(while) K
+( \(pi\(lb+1\)) p
+(.lt.) K
+(zb ) p
+(.and.) K
+( lb) p
+(.lt.) K
+(kk\)) p n
+(          lb=lb+1) N
+(        ) S
+(enddo) K n
+(        ) p
+(if) K
+(     \(zb-zt) p
+(.le.) K
+(thin ) p
+(.or.) K
+( zt) p
+(.ge.) K
+(zx\) ) p
+(then) K n
+(          ) p
+(if) K
+(     \(k) p
+(.ne.) K
+(1\) ) p
+(then) K n
+(c) c n
+(c ---       thin or bottomed layer, values taken from layer above) N
+(c) N
+(            ) p
+(do) K
+( i= 1,ks) p n
+(              so\(k,i\) = so\(k-1,i\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(else) K
+( ) p
+(!thin surface layer) c n
+(            ) p
+(do) K
+( i= 1,ks) p n
+(              so\(k,i\) = si\(k,i\)) N
+(            ) S
+(enddo) K
+( ) p
+(!i) c n
+(          ) p
+(endif) K n
+(        ) p
+(else) K n
+(c) c n
+(c         form layer averages.) N
+(c) N
+(*         if     \(pi\(lb\).gt.zt\) then) N
+(*           write\(lp,*\) 'bad lb = ',lb) N
+(*           stop) N
+(*         endif) N
+(          xt=\(zt-pi\(lt\)\)/) p
+(max) K
+(\(dpi\(lt\),thin\)) p n
+(          xb=\(zb-pi\(lb\)\)/) S
+(max) K
+(\(dpi\(lb\),thin\)) p n
+(          ) S
+(do) K
+( i= 1,ks) p n
+(            o = si\(\(lt+lb\)/2,i\)  ) S
+(!offset to reduce round-off) c n
+(            ) p
+(if) K
+(     \(lt) p
+(.ne.) K
+(lb\) ) p
+(then) K n
+(              sz=   dpi\(lt\)*\(     \(ci\(lt,i,1\)-o\)*\(1.-xt\)) p n
+(     &                       +0.5*\(ci\(lt,i,2\)+) N
+(     &                             ci\(lt,i,3\) \) *\(1.-xt**2\)) N
+(     &                            -ci\(lt,i,3\)   *\(1.-xt**3\)/3.0 \)) N
+(              ) S
+(do) K
+( l=lt+1,lb-1) p n
+(                sz=sz+dpi\(l\)*\(si\(l,i\)-o\)) N
+(              ) S
+(enddo) K
+( ) p
+(!l) c n
+(              sz=sz+dpi\(lb\)*\(     \(ci\(lb,i,1\)-o\)*    xb) p n
+(hybgen.f) (Page 26/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (Thursday June 12, 2008) (26/27) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (27) 27
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(     &                       +0.5*\(ci\(lb,i,2\)+) p n
+(     &                             ci\(lb,i,3\) \) *    xb**2) N
+(     &                            -ci\(lb,i,3\)   *    xb**3 /3.0 \)) N
+(            ) S
+(else) K n
+(              sz=dpi\(lt\)*\(     \(ci\(lt,i,1\)-o\)*\(xb-xt\)) p n
+(     &                    +0.5*\(ci\(lt,i,2\)+) N
+(     &                          ci\(lt,i,3\) \) *\(xb**2-xt**2\)) N
+(     &                         -ci\(lt,i,3\)   *\(xb**3-xt**3\)/3.0 \)) N
+(            ) S
+(endif) K n
+(            so\(k,i\) = o + sz/\(zb-zt\)  ) p
+(!zb-zt>=thin) c n
+(          ) p
+(enddo) K
+( ) p
+(!i) c n
+(        ) p
+(endif) K
+( ) p
+(!thin:std layer) c n
+(      ) p
+(enddo) K
+( ) p
+(!k) c n
+(      ) p
+(return) K n
+(      ) p
+(end) K
+( ) p
+(subroutine) K
+( ) p
+(hybgen_ppm_remap) L n
+() p n
+(c) c n
+(c) N
+(c> Revision history:) p n
+(c>) N
+(c> Feb. 2000 -- total rewrite to convert to ') S
+(newzp) str
+(' approach) p n
+(c> Jul. 2000 -- added hybgenj for OpenMP parallelization) N
+(c> Oct. 2000 -- added hybgenbj to simplify OpenMP logic) N
+(c> Nov. 2000 -- fill massless layers on sea ) S
+(floor) K
+( with salinity from above) p n
+(c> Nov. 2000 -- unmixing of deepest inflated layer uses th&T&S from above) N
+(c> Nov. 2000 -- ignored isopycnic variance is now 0.002) N
+(c> Nov. 2000 -- iterate to correct for cabbeling) N
+(c> Nov. 2000 -- allow for ") S
+(blocking) str
+(" interior layers) p n
+(c> Nov. 2000 -- hybflg selects conserved fields \() S
+(any) K
+( two of T/S/th\)) p n
+(c> Nov. 2002 -- replace PCM remapping with PLM when non-isopycnal) N
+(c> Apr. 2003 -- added dp00i for thinner minimum layers away from the surface) N
+(c> Dec. 2003 -- fixed tracer bug when deepest inflated layer is too light) N
+(c> Dec. 2003 -- improved water column conservation) N
+(c> Dec. 2003 -- compile time option for explicit water column conservation) N
+(c> Dec. 2003 -- ignored isopycnic variance is now 0.0001) N
+(c> Jan. 2004 -- shifted qqmn,qqmx ) S
+(range) K
+( now used in cushion function) p n
+(c> Mar. 2004 -- minimum thickness no longer enforced in near-bottom layers) N
+(c> Mar. 2004 -- ignored isopycnic variance is now epsil \(i.e. very small\)) N
+(c> Mar. 2004 -- relaxation to isopycnic layers controled via hybrlx) N
+(c> Mar. 2004 -- relaxation removes the need to correct for cabbeling) N
+(c> Mar. 2004 -- modified unmixing selection criteria) N
+(c> Mar. 2004 -- added isotop \(topiso\) for isopycnal layer minimum depths) N
+(c> Jun. 2005 -- hybrlx \(qhybrlx\) now input via blkdat.input) N
+(c> Jan. 2007 -- hybrlx now ) S
+(only) K
+( active below ") p
+(fixed coordinate) str
+(" surface layers) p n
+(c> Aug. 2007 -- removed mxlkta logic) N
+(c> Sep. 2007 -- added hybmap and hybiso for PCM,PLM,PPM remaper selection) N
+(c> Jan. 2008 -- updated logic for two layers \(one too dense, other too light\)) N
+(hybgen.f) (Page 27/27) (Mar 25, 08 15:52) title
+border
+grestore
+(Printed by Alan Wallcraft) rhead
+() (27/27) (Thursday June 12, 2008) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF

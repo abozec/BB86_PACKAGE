@@ -1,0 +1,21 @@
+src_2.0.01_16/TEST/README.src.test:
+
+This directory contains stand-alone tests of MPI communication routines.
+It should not normally be needed to run HYCOM, unless there are 
+indications that the MPI version is not working correctly (e.g. a failed 
+named pipe comparison, see README.expt_pipe).  Note that the ATLa2.00
+coastline is not a definative test of MPI communications, but these 
+test cases have also been run on several other regions.
+
+To create all the executables issue the command:
+
+    ./Make_all.com >$ Make_all.log
+
+This assumes that ../hycom is up to date, and that compiled module 
+information is either in *.o or *.mod.  Edit Make_all.com for the
+appropriate ARCH.  Note that the TYPE is taken from the source 
+directory name.
+
+All the run scripts are configured for an IBM SP with the LoadLeveler 
+batch system, with either 3 or 9 MPI tasks.  These should be edited
+for your region and the appropriate number of MPI tasks.

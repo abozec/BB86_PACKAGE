@@ -1,0 +1,94 @@
+src_2.1.02_22_one/README.src.MICOMvsHYCOM
+
+1. MICOM had a bulk mixed layer (prognostic T&S) above isopycnal layers
+(prognostic S).  HYCOM has a hybrid vertical coordinate that can 
+dynamically migrate between isopycnal, Z-level and sigma-level.  It 
+has two prognostic thermodynamic variables (T&S) in all layers, and the 
+mixed layer is no longer associated with layer 1.
+
+2. MICOM used CGS units, with fluxes positive into the atmosphere, and 
+its standard grid orienetation was: 1st dimension North to South, 2nd 
+dimension West to East, with u and v representing southward and eastward 
+velocity respectively.  HYCOM uses MKS units throughout, with all input 
+in MKS and with fluxes positive into the ocean.  Its standard grid 
+orientation is: 1st dimension West to East, 2nd dimension South to 
+North, with u and v representing eastward and northward velocity 
+respectively.  See doc/meshmap_{hycom,micom}.[tex,ps} for HYCOM and 
+MICOM standard grid maps.
+
+3. HYCOM can handle arbitrary orthogonal curvilinear grids, which are
+specified by 2-D arrays of lat,lon locations for each grid point.
+
+4.  Routine hybgen.f controls the migration of layers between isopycnal
+and fixed vertical coordinates, see doc/hybrid.ps.  Fixed coordinates 
+are selected by specifying a minimum thickness for layers that would 
+outcrop at the surface if they were isopycnal.  The minimum thickness 
+is layer number dependent (i.e. can be thicker for deeper layers), and 
+can also depend on the bathymetry (i.e. sigma-levels).
+
+5. HYCOM containes several mixed layer models.  Kraus-Turner (KT) models
+are included for compatibility with MICOM, but the recommended mixed 
+layer model is the non-slab K-Profile Parameterization (KPP) approach
+of Mc Williams, Large, and Doney.  In addition, Mellor-Yamada level 2.5 
+and Price-Weller-Pinkel mixed layer models are available.
+
+    5a. The KT model governs mixing only within the mixed layer while the 
+KPP model provides mixing from surface to bottom.  When the KT model is 
+selected, interior diapycnal mixing can either be explict (as in MICOM)
+or implicit (based on a subset of the KPP scheme).
+
+    5b. The KPP model parameterizes interior diapycnal mixing due to (1) 
+background internal wave breaking, (2) double-diffusion (diffusive convection 
+and salt fingering cases), and (3) instability due to resolved vertical shear 
+based on a gradient Richardson number. Process (1) is always implemented, 
+but the others are optional.
+
+    5c. In KPP, diffusivities within the surface boundary layer are 
+parameterized as a function of boundary layer thickness times a 
+depth-dependent turbulent velocity scale (proportional to ustar) times a 
+third-order polynomial shape function of depth.  Boundary layer 
+diffusivities depend on surface forcing (the magnitude of this forcing 
+and whether it is stabilizing or de-stabilizing) plus the magnitude and 
+gradient of interior mixing at the boundary layer base.  At the boundary 
+layer base, boundary layer diffusivity profiles are smoothly matched to 
+interior diffusivity profiles resulting from the processes listed above 
+(the profiles and their first derivatives are continuous at the boundary 
+layer base).  The turbulent boundary layer depth (hbl) is diagnosed first, 
+the boundary layer diffusivity profiles are calculated, then the boundary 
+and interior diffusivity profiles are combined. The depth hbl is the 
+maximum depth to which boundary layer eddies can penetrate.
+
+    5d. KPP boundary layer mixing optinally includes a nonlocal forcing 
+term to parameterize countergradient fluxes due to nonlocal effects.
+
+    5e. For KPP mixing, solutions of the vertical diffusion equation are
+performed using a tri-diagonal matrix inversion.  The solution is 
+semi-implicit because multiple iterations are performed. Two iterations 
+are recommended as a reasonable balance between solution accuracy and 
+computation time.
+
+    5f. For KPP mixing, the mixed layer depth is diagnosed in the same 
+manner as it is using observations. Vertical interpolation is used to 
+find the depth at which the density exceeds the surface layer value by 
+a specified value (-sigmlj-, which is set in blkdat.input).
+
+    5g. For both mixed layer models, bulk mixed layer fields of T, S, 
+density, u, and v are diagnosed by vertically averaging these fields 
+from the surface down to the mixed layer base.
+
+    5h. One additional surface forcing field, shortwave radiation flux, 
+has been added.  Code has been added to handle penetrating shortwave 
+radiation when either mixed layer model is selected.  Penetrating 
+shortwave radiation is necessary for KPP mixing, but is optional for
+Kraus-Turner mixing.  Penetration depth is a function of water clarity 
+through the jerlov water type.  The water type is currently set to 
+the same value everywhere.
+
+    5i. No matter which mixed layer model is selected, surface momentum 
+forcing is distributed entirely within layer 1 at each grid point. 
+Vertical mixing of momentum is performed by the mixed layer models.
+
+6. HYCOM has a MICOM-like mode, which is almost exactly the same as
+MICOM 2.8.  In this mode, the mixed layer model has to MICOM's version
+of K-T, all layers below layer 1 are isopycnal (temperature is a
+dependent variable), and hybgen is never called.
