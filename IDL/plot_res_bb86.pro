@@ -11,7 +11,7 @@ PRO plot_res_bb86
    idm = 101 &  jdm = 101       ;; size of the domain
    kdm = 2                      ;; number of vertical layer in BB86
    tdm = 1800                   ;; number of time-stamp in bb86
-   dp0 = 500.                   ;; thickness of the 1st layer  (m) 
+   dp0 = 500.                   ;; thickness of the 1st layer  (m)
    eps = 0.0001                 ;; epsilon to avoid dividing by 0.
    tplot1 = 1800 &  tplot2 = 1800 ;; time-stamp to plot (starts from 1.)
 
@@ -24,7 +24,7 @@ PRO plot_res_bb86
    ;; constants
    rho = 1000.   ;; reference density
    g = 9.806     ;; gravity
-   
+
 
    ;; Read grid
    file_grid = 'regional.grid.BB86.a'
@@ -32,41 +32,41 @@ PRO plot_res_bb86
 
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   ;; READ the HYCOM files 
+   ;; READ the HYCOM files
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   io_hycom = io+'expt_01.0/data/output/'  
+   io_hycom = io+'expt_01.0/data/output/'
 
    uhyc = fltarr(idm, jdm, kdm+1, tdm) ;; 1 more layer for the hybrid!!
-   vhyc = fltarr(idm, jdm, kdm+1, tdm) 
-   dphyc = fltarr(idm, jdm, kdm+1, tdm) 
+   vhyc = fltarr(idm, jdm, kdm+1, tdm)
+   dphyc = fltarr(idm, jdm, kdm+1, tdm)
 
-   FOR t = tplot1, tplot2 DO BEGIN 
-      CASE 1  OF 
-         (t LE 344): BEGIN 
+   FOR t = tplot1, tplot2 DO BEGIN
+      CASE 1  OF
+         (t LE 344): BEGIN
             year = '0001'
             day = string(t+16, format = '(i3.3)') ;; 16 u and v == 0. so we start at day 17.
-         END 
-         (t GT 344) AND (t LE 704) : BEGIN 
+         END
+         (t GT 344) AND (t LE 704) : BEGIN
             year = '0002'
             day = string(t-344, format = '(i3.3)')
-         END 
-         (t GT 704) AND (t LE  1064) : BEGIN 
+         END
+         (t GT 704) AND (t LE  1064) : BEGIN
             year = '0003'
             day = string(t-704, format = '(i3.3)')
-         END 
-         (t GT 1064) AND (t LE  1424) : BEGIN 
+         END
+         (t GT 1064) AND (t LE  1424) : BEGIN
             year = '0004'
             day = string(t-1064, format = '(i3.3)')
-         END 
-         (t GT 1424) AND (t LE  1784) : BEGIN 
+         END
+         (t GT 1424) AND (t LE  1784) : BEGIN
             year = '0005'
             day = string(t-1424, format = '(i3.3)')
-         END 
-         (t GT 1784) AND (t LE  2144) : BEGIN 
+         END
+         (t GT 1784) AND (t LE  2144) : BEGIN
             year = '0006'
             day = string(t-1784, format = '(i3.3)')
-         END 
-      ENDCASE 
+         END
+      ENDCASE
       file = 'archv.'+year+'_'+day+'_00.a'
       print,  file, t
 
@@ -84,23 +84,23 @@ PRO plot_res_bb86
       num2 = 8     ;; number of 2D variables in the archive file
       ivar_ub = 7  ;; index of ubaro (7th 2D variable)
       ivar_vb = 8  ;; index of vbaro (8th 2D variable)
-      sub_var2, idm, jdm, io_hycom+file, num2, ivar_ub, ubaro    
-      sub_var2, idm, jdm, io_hycom+file, num2, ivar_vb, vbaro    
+      sub_var2, idm, jdm, io_hycom+file, num2, ivar_ub, ubaro
+      sub_var2, idm, jdm, io_hycom+file, num2, ivar_vb, vbaro
 
-      
+
       ;; archive files 3D variable units (see archv.*.b for the list of available var.)
       ;;      u-vel.  : m/s
       ;;      v-vel.  : m/s
       ;;      thknss  : *1./(rho*g) to get in m
       ;;      temp    : C
       ;;      salin   : psu
-      
+
       ;; extract velocities (ubaroc & vbaroc)
       num3 = 5   ;; number of 3D variables in the archive file
       ivar_u = 1 ;; index of u baroclinic
       ivar_v = 2 ;; index of v baroclinic
-      sub_var3, idm, jdm, kdm+1, io_hycom+file, num2, num3, ivar_u, ubac    
-      sub_var3, idm, jdm, kdm+1, io_hycom+file, num2, num3, ivar_v, vbac    
+      sub_var3, idm, jdm, kdm+1, io_hycom+file, num2, num3, ivar_u, ubac
+      sub_var3, idm, jdm, kdm+1, io_hycom+file, num2, num3, ivar_v, vbac
 
       ;; Get utot & vtot
       FOR k = 0, kdm DO uhyc(*, *, k, t-1) = ubaro(*, *)+ubac(*, *, k)
@@ -108,9 +108,9 @@ PRO plot_res_bb86
 
 
       ;; extract the layer thickness
-      ivar_dp = 3 
+      ivar_dp = 3
       sub_var3, idm, jdm, kdm+1, io_hycom+file, num2, num3, ivar_dp, dp
-      dphyc(*, *, *, t-1) = dp/(rho*g) 
+      dphyc(*, *, *, t-1) = dp/(rho*g)
 
 
       ;; put the u on the p-grid
@@ -138,56 +138,56 @@ PRO plot_res_bb86
       ;; get the average value of v at the p-point
       vthyc = (vhyc+shift(vhyc, 0, -1, 0, 0))/maxval
       vthyc(*, jdm-1, *, *) = vthyc(*, jdm-2, *, *)
-     
 
-   ENDFOR  
+
+   ENDFOR
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-   ;; plot 
+   ;; plot
    for t = tplot1,  tplot2 do begin
 
       ;; norme, min and max of the plots
-      normeref_hyc  = 0.05    ;; vector norm of HYCOM-BB86 (in m)
+      normeref_hyc  = 0.05    ;; vector norm of HYCOM-BB86 (in m/s)
       onevectout = 2          ;; plot one vector out of 'onevectorout'
       min_dp = -450. &  max_dp = 450. ;; layer thickness anomaly in m (min and max)
 
 
-      device, true_color = 24, decomposed = 0   
-      IF (PS EQ 0 ) THEN BEGIN 
+      device, true_color = 24, decomposed = 0
+      IF (PS EQ 0 ) THEN BEGIN
          dimensions = get_screen_size(RESOLUTION=resolution)
          coef = floor(1./resolution[0])
          windowsize_scale = 1.
          coef = windowsize_scale * coef
-         
+
          mipgsz = min(page_size, max = mapgsz)
 
          xsize = coef * (mipgsz*key_portrait + mapgsz*(1-key_portrait))
          ysize = coef * (mipgsz*(1-key_portrait) + mapgsz*key_portrait)
-         
-         window, 1, xsize = xsize, ysize = ysize 
+
+         window, 1, xsize = xsize, ysize = ysize
          foreground = !P.Background &  background = !P.Color
          char = 1.
-      ENDIF 
-      IF (PS EQ 1 ) THEN BEGIN 
+      ENDIF
+      IF (PS EQ 1 ) THEN BEGIN
          IF !d.name EQ 'PS' then device,/close
          set_plot,'ps'
          device, /color, /helvetica, filename = file_ps $
           , LANDSCAPE = 1 - key_portrait, PORTRAIT = key_portrait $
           , xsize = max(page_size), ysize = min(page_size), xoffset = 0., yoffset = max(page_size) $
-          , bits_per_pixel = 8 
+          , bits_per_pixel = 8
          foreground = !P.Color &  background = !P.Background
          char = 0.75
-      ENDIF 
+      ENDIF
 
 
-      
+
 
       loadct, 39 ;; color palette
 
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; HYCOM-BB86 
+      ;; HYCOM-BB86
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       ;; get a blank plot
@@ -199,16 +199,16 @@ PRO plot_res_bb86
       ;; add the velocities vectors
       ;; definition of ref vector (legend)
       uref = fltarr(2, 2) &  vref =fltarr(2, 2)
-      uref(0, 0) = 1 
+      uref(0, 0) = 1
 
       ;; get the vectors to plot
-      uu = reform(uthyc(0:idm-1:onevectout, 0:jdm-1:onevectout, 1, t-1)) 
-      vv = reform(vthyc(0:idm-1:onevectout, 0:jdm-1:onevectout, 1, t-1)) 
+      uu = reform(uthyc(0:idm-1:onevectout, 0:jdm-1:onevectout, 1, t-1))
+      vv = reform(vthyc(0:idm-1:onevectout, 0:jdm-1:onevectout, 1, t-1))
       lon = reform(plon(0:idm-1:onevectout, 0))
       lat = reform(plat(0, 0:jdm-1:onevectout))
 
       ;; we normalize the vectors
-      normeref = normeref_hyc ;; in m
+      normeref = normeref_hyc ;; in m/s
       norme =sqrt(uu^2.+vv^2.)
       normemax = max(norme, /nan)/normeref
 
@@ -221,14 +221,14 @@ PRO plot_res_bb86
 
 
 
-      ;; plot the dp's 
+      ;; plot the dp's
       ;; defined colors
       levels = 40
       Minss = min_dp &  Maxss = max_dp
       step = (Maxss - Minss) / levels
-      num_level = IndGen(levels) * step + Minss 
+      num_level = IndGen(levels) * step + Minss
       loadct, 33, ncolors = levels, bottom = 1
-      
+
       ;; get anomaly dp
       diff_dp = reform(dphyc(*, *, 1, t-1)) -(dp0-1.)
       diff_dp(where(finite(diff_dp) EQ 0)) = 0.
@@ -244,13 +244,13 @@ PRO plot_res_bb86
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      IF (PS EQ 1 ) THEN BEGIN 
+      IF (PS EQ 1 ) THEN BEGIN
          device, /close
          set_plot, 'x'
-      ENDIF 
+      ENDIF
 
       device, decomposed = 1
-   endfor 
+   endfor
    stop
 
-END  
+END

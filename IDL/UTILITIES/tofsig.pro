@@ -1,19 +1,19 @@
 FUNCTION  tofsig, S, R, sig
 
-   IF (sig EQ 2.) THEN BEGIN 
+   IF (sig EQ 2.) THEN BEGIN
 ;; --- coefficients for sigma-2 (based on Brydon & Sun fit)
-      C1= 9.77093E+00 & C2=-2.26493E-02
-      C3= 7.89879E-01 & C4=-6.43205E-03
-      C5=-2.62983E-03 & C6= 2.75835E-05
-      C7= 3.15235E-05
-   ENDIF 
-   IF (sig EQ 0.) THEN BEGIN 
+      C1= 9.77093D+00 & C2=-2.26493D-02
+      C3= 7.89879D-01 & C4=-6.43205D-03
+      C5=-2.62983D-03 & C6= 2.75835D-05
+      C7= 3.15235D-05
+   ENDIF
+   IF (sig EQ 0.) THEN BEGIN
 ;; --- coefficients for sigma-0 (based on Brydon & Sun fit)
-      C1=-1.36471E-01 &  C2= 4.68181E-02
-      C3= 8.07004E-01 &  C4=-7.45353E-03
-      C5=-2.94418E-03 &  C6= 3.43570E-05
-      C7= 3.48658E-05
-   ENDIF 
+      C1=-1.36471D-01 &  C2= 4.68181D-02
+      C3= 8.07004D-01 &  C4=-7.45353D-03
+      C5=-2.94418D-03 &  C6= 3.43570D-05
+      C7= 3.48658D-05
+   ENDIF
 
 
       AZERO  =0.d
