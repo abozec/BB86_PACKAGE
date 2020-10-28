@@ -293,8 +293,8 @@ def write_hycom_depth(field,file_name:str,description:str):
 
    # writing .b file
    field32[field32 > 1e5]=np.nan
-   b_file=[description,F"idm/jdm= {idm} {jdm}","   ","   ","   ",\
-           F"min, max depth = {np.nanmin(field32)} {np.nanmax(field32)}"]
+   b_file=[description,F"idm/jdm= {idm} {jdm}","   ","   ","   ", \
+           "min, max depth = {0:14.7E} {1:14.7E}".format(np.nanmin(field32),np.nanmax(field32))]
 
    fbout=open(b_file_name,'w')
    fbout.writelines("%s\n" % i for i in b_file)
