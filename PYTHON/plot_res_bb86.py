@@ -9,6 +9,7 @@ import proplot as plot
 import numpy as np
 
 iodir='/Users/abozec/Documents/GitHub/BB86_PACKAGE/PYTHON/'
+sys.path.append(iodir)
 from hycom.info import read_field_names,read_field_grid_names
 from hycom.io import read_hycom_fields, read_hycom_grid
 

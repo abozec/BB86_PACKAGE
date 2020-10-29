@@ -10,6 +10,7 @@ import proplot as plot
 import numpy as np
 
 iodir='/Users/abozec/Documents/GitHub/BB86_PACKAGE/PYTHON/'
+sys.path.append(iodir)
 from hycom.io import read_hycom_depth, write_hycom_relax
 from UTILITIES.density import tofsig
 

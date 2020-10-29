@@ -10,7 +10,7 @@ import proplot as plot
 import numpy as np
 
 iodir='/Users/abozec/Documents/GitHub/BB86_PACKAGE/PYTHON/'
-sys.path.append(join(iodir+'hycom/'))
+sys.path.append(iodir)
 from hycom.io import write_hycom_grid
 
 # define path
