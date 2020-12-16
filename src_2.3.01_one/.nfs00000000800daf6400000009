@@ -1,0 +1,6 @@
+/Net/yucatan/abozec/GitHub/BB86_PACKAGE/src_2.3.01_one
+ARCH =  intelIFC-relo   TYPE =  one
+ifort -DIA32 -DREAL8 -DENDIAN_IO -DNAN2003 -DTIMER -DRELO -DEOS_SIG0 -DEOS_7T    -g  -assume byterecl -cm -vec_report0 -w -O3 -tpp7 -xW -r8 -c mod_dimensions.F90
+ifort -DIA32 -DREAL8 -DENDIAN_IO -DNAN2003 -DTIMER -DRELO -DEOS_SIG0 -DEOS_7T    -g  -assume byterecl -cm -vec_report0 -w -O3 -tpp7 -xW -r8 -c mod_xc.F90
+ifort -DIA32 -DREAL8 -DENDIAN_IO -DNAN2003 -DTIMER -DRELO -DEOS_SIG0 -DEOS_7T    -g  -assume byterecl -cm -vec_report0 -w -O3 -tpp7 -xW -r8 -c mod_za.F90
+ifort -DIA32 -DREAL8 -DENDIAN_IO -DNAN2003 -DTIMER -DRELO -DEOS_SIG0 -DEOS_7T    -g  -assume byterecl -cm -vec_report0 -w -O3 -tpp7 -xW -r8 -c mod_cb_arrays.F90

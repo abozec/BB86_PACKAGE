@@ -69,9 +69,9 @@
       %%      v_btrop : m/s
 
       %% extract barotropic velocities (ubarot)
-      num2 = 8   ;  %% number of 2D variables in the archive file
-      ivar_ub = 7;  %% index of ubaro (7th 2D variable)
-      ivar_vb = 8;  %% index of vbaro (8th 2D variable)
+      num2 = 10   ;  %% number of 2D variables in the archive file
+      ivar_ub =  9;  %% index of ubaro (7th 2D variable)
+      ivar_vb = 10;  %% index of vbaro (8th 2D variable)
       ubaro=sub_var2([io_hycom,file],[jdm, idm], num2, ivar_ub) ;
       vbaro=sub_var2([io_hycom,file],[jdm, idm], num2, ivar_vb) ;  
 

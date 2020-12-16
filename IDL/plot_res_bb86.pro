@@ -81,9 +81,9 @@ PRO plot_res_bb86
       ;;      v_btrop : m/s
 
       ;; extract barotropic velocities (ubarot & vbarot)
-      num2 = 8     ;; number of 2D variables in the archive file
-      ivar_ub = 7  ;; index of ubaro (7th 2D variable)
-      ivar_vb = 8  ;; index of vbaro (8th 2D variable)
+      num2 = 10     ;; number of 2D variables in the archive file
+      ivar_ub = 9  ;; index of ubaro (7th 2D variable)
+      ivar_vb = 10  ;; index of vbaro (8th 2D variable)
       sub_var2, idm, jdm, io_hycom+file, num2, ivar_ub, ubaro
       sub_var2, idm, jdm, io_hycom+file, num2, ivar_vb, vbaro
 
