@@ -23,7 +23,7 @@ CCFLAGS       =	-O
 CPP           =	cpp -P
 CPPFLAGS      =	-DIA32 -DREAL8 -DENDIAN_IO -DNAN2003 -DTIMER -DRELO $(CPP_EXTRAS)
 LD            =	$(FC)
-LDFLAGS       =	$(FCFFLAGS) -Wl,-Bstatic
+LDFLAGS       =	$(FCFFLAGS) 
 EXTRALIBS     =
 
 #
