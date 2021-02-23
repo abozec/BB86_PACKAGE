@@ -89,7 +89,7 @@ fbout.close()
 ## open .a file northward wind
 fout=open(iodir+'../force/'+file_N+'.a','wb')
 
-## relax .a file
+## write .a file
 for t in np.arange(tdm):
    field32=np.array(ttn[:,:,t],dtype='>f4') ## float32 big_endian
    ## writing .a file
