@@ -62,7 +62,7 @@ for j in np.arange(jdm):
 ## open .a file eastward wind
 fout=open(iodir+'../force/'+file_E+'.a','wb')
 
-## relax .a file
+## write .a file
 for t in np.arange(tdm):
    field32=np.array(tte[:,:,t],dtype='>f4') ## float32 big_endian
    ## writing .a file
