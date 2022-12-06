@@ -45,6 +45,7 @@ def subset_hycom_field(input_file: str, output_file:str, fields: list, layers=[]
     layer_size = lon_size*lat_size
     # size of each layer (it seems all the layers have the same size)
     npad = 4096-np.mod(layer_size, 4096)
+    if (npad == 4096): npad=0
 
     # Data of the new bfile
     new_b_file_lines = b_file_lines[:10]
@@ -113,7 +114,8 @@ def read_hycom_fields(file_name: str, fields: list, layers=[], replace_to_nan=Tr
     layer_size = lon_size*lat_size
     # size of each layer (it seems all the layers have the same size)
     npad = 4096-np.mod(layer_size, 4096)
-
+    if (npad == 4096): npad=0
+		
     # Printing basic information
     print(F"Hycom version: {hycom_ver}, Experiment: {exp_num}")
     for cur_line in range(3):
@@ -197,7 +199,7 @@ def read_hycom_grid(file_name: str, fields: list,  replace_to_nan=True):
     layer_size = lon_size*lat_size
     # size of each layer (it seems all the layers have the same size)
     npad = 4096-np.mod(layer_size, 4096)
-
+    if (npad == 4096): npad=0
 
     # Looking for the starting locations for each layer and each field
     field_loc = {field: [] for field in fields}
