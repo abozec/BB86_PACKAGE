@@ -11,7 +11,10 @@ function [plon, plat, ulon,  ulat,  vlon, vlat, qlon, qlat, pang, ...
   JDM=jm;
   IJDM=IDM*JDM;
   npad=4096-mod(IJDM,4096);
-  
+  if (npad == 4096)
+    npad =0;
+  end
+ 
   %% Read the grid
 
   [plon,count]=fread(grid_fid,IJDM,'float32','ieee-be');
