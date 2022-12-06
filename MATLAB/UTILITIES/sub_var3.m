@@ -11,8 +11,8 @@
 %        [jj ii kk]: dimension for sub domain [optional] 
 %----------------------------------------------------------------------
 %   Xiaobiao Xu, 2007 
+%  Alexandra Bozec, 2022
 %
-
   aout = [];
   if  (nargin~=5 & nargin~=8)
       display('W r o n g  n a r g i n ');
@@ -26,7 +26,10 @@
           jdm = dims(1);
           idm = dims(2);
           kdm = dims(3);
-          nn = ceil(jdm*idm/4096)*4096; 
+          nn=4096-mod(jdm*idm, 4096)
+          if (nn == 4096)
+            nn = 0
+          end
 % ========================================================================
           if  nargin==8 % subset of the variable --
 % ========================================================================
@@ -38,7 +41,7 @@
               for k=1:nk
                   offs = num2+num3*(kk(k)-1)+ivar-1;
                   for j=1:nj
-                      offset = (offs*nn + (jj(j)-1)*idm + ii(1)-1)*4;
+                      offset = (offs*(jdm*idm+nn) + (jj(j)-1)*idm + ii(1)-1)*4;
                       status = fseek(fid,offset,'bof');
                       if status~=0; display('error in seek'); end
                       aout(j,:,k) = fread(fid,[1,ni],'real*4');
@@ -50,7 +53,7 @@
 % ========================================================================
               aout = nan(jdm,idm,kdm);
               for k=1:kdm
-                  offset = (num2+num3*(k-1)+ivar-1)*nn*4;
+                  offset = (num2+num3*(k-1)+ivar-1)*(jdm*idm+nn)*4;
                   status = fseek(fid,offset,'bof');
                   if status~=0; display('error in seek'); end
                   aone = fread(fid,[1,jdm*idm],'real*4');
