@@ -17,6 +17,7 @@
 %          aout
 %----------------------------------------------------------------------
 %   Xiaobiao Xu, 2007 
+%   Alexandra Bozec, 2022
 %
   aout = [];
   if  (nargin~=4 & nargin~=6)
@@ -30,7 +31,11 @@
 
          jdm = dims(1);
          idm = dims(2);
-         nn  = ceil(jdm*idm/4096)*4096;
+         nn=4096-mod(jdm*idm, 4096);
+         if (nn == 4096)
+           nn = 0;
+         end
+
 %============================================================
          if nargin==6  % subregion 
 %============================================================
@@ -40,7 +45,7 @@
             offs= (ivar-1);
             aout = nan*ones(nj,ni);
             for j=1:nj
-                offset = (offs*nn + (jj(j)-1)*idm + ii(1)-1)*4;
+                offset = (offs*(jdm*idm+nn) + (jj(j)-1)*idm + ii(1)-1)*4;
                 status = fseek(fid,offset,'bof');
                 if status~=0; display('error in seek'); end
                 aout(j,:) = fread(fid,[1,ni],'real*4');
@@ -48,7 +53,7 @@
 %============================================================
          else         % whole domain 
 %============================================================
-            offs = (ivar-1)*nn*4;
+            offs = (ivar-1)*(jdm*idm+nn)*4;
             status = fseek(fid,offs,'bof');
             if status~=0; display('error in seek'); end
             aone = fread(fid,[1,jdm*idm],'real*4');
