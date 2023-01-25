@@ -246,6 +246,61 @@ def read_hycom_grid(file_name: str, fields: list,  replace_to_nan=True):
 
     return np_fields
 
+def sub_var2(file_name:str, idm, jdm, ivar,replace_to_nan=True,**kwargs):
+   """
+   read 2d variable in hycom files using a npad
+   file_name     : file name '.a'
+   idm, jdm      : dimension for full domain
+   ivar          : index of the 2d variable
+    **kwarg:
+   [ii],[jj]     : optional subset domain array
+   """
+   ## default values of vmin, vmax and cmap
+   ii = kwargs.get('ii', np.zeros([0]))
+   jj = kwargs.get('jj', np.zeros([0]))
+
+   ## Dimensions of the domain
+   ijdm = idm*jdm
+   ##  NPAD size
+   npad = 4096-np.mod(ijdm, 4096)
+   if (npad == 4096): npad=0
+
+   #print('NPAD',npad)
+   if (ii.shape[0] != 0):
+      if (np.max(ii) > idm-1):
+         print('max ii > to idm-1 - stop')
+         return
+
+      if (np.max(jj) > jdm-1):
+         print('max jj > to jdm-1 - stop')
+         return
+
+      ni = ii.shape[0] ; nj=jj.shape[0]
+      var = np.zeros([nj, ni])
+      offs = ivar-1
+      for j in np.arange(nj):
+         dstart = (ivar-1)*(ijdm+npad)*4 + (jj[j]*idm + ii[0])*4
+         result = np.fromfile(file_name,dtype='>f', count=ni, offset=dstart)
+         var[j, :] = result[:]
+
+      ## Put nan on missing values
+      if replace_to_nan:
+          var[var > 1e20] = np.nan
+   else:
+	      ## find data offset
+      dstart = (ivar-1)*(ijdm+npad)*4
+      #print(dstart)
+      ## Tab Declaration
+      var = np.zeros([jdm,idm])+ 100
+      result = np.fromfile(file_name,dtype='>f', count=ijdm, offset=dstart)
+      var[:,:] = np.reshape(result, (jdm, idm))
+      ## Put nan on missing values
+      if replace_to_nan:
+          var[var > 1e20] = np.nan
+
+   return var
+
+
 def read_hycom_depth(file_name:str, idm, jdm, replace_to_nan=True):
    """
    Read depth file from HYCOM (2D field)
