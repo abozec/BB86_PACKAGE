@@ -3,23 +3,21 @@
 ## include utilities function
 import sys
 import os
-from os.path import join
 ### might not need next line in older or newer version of proplot
-os.environ['PROJ_LIB'] = '/Users/abozec/opt/anaconda3/share/proj'
-import proplot as plot
 import numpy as np
 
-iodir = '/Users/abozec/Documents/GitHub/BB86_PACKAGE/PYTHON/'
+iodir = os.path.dirname(__file__)
 sys.path.append(iodir)
 from hycom.io import write_hycom_grid
 
 # define path
-io = join(iodir + '../topo/')
-file_grid_new = 'regional.grid.BB86.python'
+io = os.path.join(iodir, '../topo/')
+outdir = ('/data/')
+file_grid_new = 'regional.grid'
 
 ## size of the domain
-idm = 101
-jdm = 101
+idm = 4500
+jdm = 3298
 
 ## longitude/latitude starting point + resolution  (in degrees) (NB: those
 ## variables are  not used in HYCOM)
@@ -121,7 +119,7 @@ for j in np.arange(jdm):
 pasp = pscx / pscy
 
 ##  Writing new grid file
-write_hycom_grid(join(io+file_grid_new+'.a'), plon, plat, qlon,  qlat,  ulon, ulat, \
+write_hycom_grid(os.path.join(outdir, file_grid_new+'.a'), plon, plat, qlon,  qlat,  ulon, ulat, \
  vlon, vlat, pang,pscx, pscy, qscx,  qscy, uscx, uscy,  vscx, vscy, cori, pasp,mapflg)
 
 print('Writing grid file done ')

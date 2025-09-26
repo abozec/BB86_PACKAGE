@@ -4,19 +4,24 @@
 ## include utilities function
 import sys
 import os
-from os.path import join
 ### might not need next line in older or newer version of proplot
 os.environ['PROJ_LIB'] = '/Users/abozec/opt/anaconda3/share/proj'
-import proplot as plot
+pl = 0
+try:
+    import proplot as plot
+except ImportError:
+    pl = 0
+    print('proplot not found.. setting pl to 0')
 import numpy as np
 
-iodir = '/Users/abozec/Documents/GitHub/BB86_PACKAGE/PYTHON/'
+iodir = os.path.dirname(__file__)
 sys.path.append(iodir)
 from hycom.io import write_hycom_depth
 
 # define path
-io = join(iodir + '../topo/')
-file_bat_new = 'depth_BB86_02_python'
+io = os.path.join(iodir, '../topo/')
+outdir = ('/data/')
+file_bat_new = 'regional.depth'
 pl = 0
 
 # size of the domain
@@ -64,4 +69,5 @@ elif latbdy == 2:
     bathy[0, :] = vmiss
 
 ## write file
-write_hycom_depth(bathy, join(io, file_bat_new + '.a'), 'Bathymetry BB86')
+write_hycom_depth(bathy, os.path.join(outdir, file_bat_new + '.a'),
+                  'Bathymetry BB86')
